@@ -1,0 +1,162 @@
+# NOTE: To use this .yml file (meant to be a template for multiple projects)
+# you will need to go to [GHrepository]->Settings->Secrets and Variables->Actions,
+# then click on the Variables tab, and create a new repository variable called 
+# PROJNAME, and give it a value that corresponds to the game/program title.
+
+
+# Workflow name
+name: Cross-platform Release
+
+# Run it whenever a new GitHub release of the repository is created
+on: 
+  release:
+    types: [created]
+  
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Cancel remaining jobs if one fails
+      fail-fast: true
+
+      # Register all of the platforms we're building for
+      matrix:
+        include:
+          - os: macos-latest
+            cpp_compiler: clang++
+            # If building Mac version as an .app bundle, using zip compression
+            # can result in unnecessary duplication of dependency files, causing
+            # significant bloat in the product size. Best keep as tar
+            archive_type: tar
+            archive_name: ${{ vars.PROJNAME }}-macos-arm64.tar.gz
+            
+          - os: ubuntu-latest
+            cpp_compiler: g++
+            archive_type: tar
+            archive_name: ${{ vars.PROJNAME }}-ubuntu-latest-x86_64.tar.gz
+            
+          - os: [ubuntu-22.04]
+            cpp_compiler: g++
+            archive_type: tar
+            archive_name: ${{ vars.PROJNAME }}-ubuntu22-x86_64.tar.gz
+
+          - os: windows-latest
+            cpp_compiler: cl
+            archive_type: zip
+            archive_name: ${{ vars.PROJNAME }}-windows-x86_64.zip
+
+    steps:
+      # Clone the repo onto the current runner for building
+      - uses: actions/checkout@v4
+
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Cache CMake build directory
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.strings.outputs.build-output-dir }}
+          key: ${{ runner.os }}-build-${{ hashFiles('CMakeLists.txt') }}-${{ hashFiles('cmake/**') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      # Make sure Linux runner has everything needed for the build process
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxrandr-dev libxcursor-dev libudev-dev libopenal-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libfontconfig1-dev libfreetype-dev libsfml-dev
+
+      - name: Configure CMake
+        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        # Set the project version to the tag name instead of git commit.
+        # Set "-DCMAKE_C_COMPILER=${{ matrix.c_compiler }}" for C/C++ projects, otherwise use CXX for C++ only projects.
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DPROJECT_VERSION="${{ github.ref_name }}"
+          -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release --parallel
+        
+      # When building on the Ubuntu-22 runner, the program will need FLAC 8
+      # (instead of 12 or newer) which many Linux setups won't be able to find
+      # or install via apt. Include the older .so in the bundle. Then, the
+      # SFML .so's RUNPATH will be hardcoded to a location on this GitHub
+      # runner, so it won't find FLAC 8 unless we use patchelf to set the 
+      # SFML .so's RUNPATH to its own directory (given that we're trying to 
+      # avoid having to use LD_LIBRARY_PATH=. to run the program.)
+      - name: (Older Linux) Bundle older version of FLAC
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        if: ${{ runner.os == 'Linux' && matrix.os != 'ubuntu-latest' }}
+        run: |
+          cp /usr/lib/x86_64-linux-gnu/libFLAC.so.8 bin/libs/
+          sudo apt-get install -y patchelf
+          patchelf --set-rpath '$ORIGIN' bin/libs/libsfml-audio.so.2.6
+          
+      # The next two steps have to do with keeping the layout simple so
+      # that no installation is required after downloading/extracting and 
+      # so that the executable file can find all of its libraries and 
+      # resource files. The expanded archive will look like:
+      #
+      # GameName-currentOS/
+      #   -GameName (executable)
+      #   -resources/
+      #     -images, sounds...
+      #   -lib1
+      #   -lib2...
+      #
+      # with the exception that on Mac and Linux we can use libs/ and frameworks/
+      # instead of keeping the libraries loose because we can set the 
+      # rpath while building with cmake.
+      
+      - name: (Windows) Reconfigure directory structure and remove extraneous .exe
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        shell: bash
+        if: runner.os == 'Windows'
+        # The Windows runner has already created a .zip file at this point
+        # even though we haven't reached the explicit archiving stage yet.
+        # In order to get the directory layout we want, we have to delete
+        # the currently existing .zip so it gets created afresh in the
+        # archiving step.
+        run: |
+          mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
+          mv bin/Release/* bin/resources "${{ vars.PROJNAME }}-${{ runner.os }}"/
+          rm -rfv *.exe *.zip
+          
+      - name: (Mac/Linux) Rename distro directory
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
+          mv bin/* "${{ vars.PROJNAME }}-${{ runner.os }}"
+
+      # Create compressed folder of the resulting build
+      - name: Archive binary
+        uses: thedoctor0/zip-release@0.7.6
+        with:
+          type: ${{ matrix.archive_type }}
+          filename: "${{ matrix.archive_name }}"
+          directory: ${{ steps.strings.outputs.build-output-dir }}
+          # Note: On Mac, if you try to use simply vars.PROJNAME as the
+          # "distro" folder name here (and the executable uses the same),
+          # the resulting executable comes out damaged and unopenable.
+          # It seems to be fixed just by making sure the executable and 
+          # its enclosing folder have different names (?)
+          path: ${{ vars.PROJNAME }}-${{ runner.os }}/
+
+      # Upload the compressed archive to our GitHub downloads page
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.archive_name }}

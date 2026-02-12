@@ -1,0 +1,25 @@
+	CMAKELISTS.TXT
+-Change project name
+-Check target_link_libraries (remove unneeded; add highscore/tgui...)
+
+	GITHUB
+-set PROJNAME = GameName in repository variables
+-alter the README
+-add source files
+-delete this file
+-create first release (trigger cross-platform workflow)
+
+
+
+!! make older mac and windows versions?
+!!curently the CopyResources step will copy .piko files to builds
+file(COPY "${source_dir}/"
+      DESTINATION "${dest_dir}"
+      PATTERN "*.piko" EXCLUDE
+)
+?? pare some of the shared/static settings (also set in yaml)
+?? make mac .app;  would put resources/ folder within .app/Contents/MacOS (so peer to exec.)
+
+couldn't do ZBilliards/ZBilliards through Mac runner: damaged executable. ZBilliardsf/ZBilliards worked
+
+linux wouldn't compile code that mac did: but setting compiler to clang++/libc++ caused compatibility issues w GLIBC etc.
