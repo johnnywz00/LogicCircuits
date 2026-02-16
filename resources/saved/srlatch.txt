@@ -1,0 +1,53 @@
+circuitin 270 2 2 350 294 
+circuitin 270 2 2 350 518 
+straight 0 2 2 378 518 
+straight 0 2 2 406 518 
+straight 0 2 2 434 518 
+straight 0 2 2 462 518 
+straight 0 2 2 490 518 
+straight 0 2 2 518 518 
+straight 0 2 2 378 294 
+straight 0 2 2 406 294 
+straight 0 2 2 434 294 
+straight 0 2 2 462 294 
+straight 0 2 2 490 294 
+straight 0 2 2 518 294 
+straight 0 2 2 546 294 
+elbow 180 2 2 686 378 
+elbow 0 2 2 546 322 
+elbow 270 2 2 546 406 
+lelbow 90 2 2 658 490 
+lelbow 180 2 2 518 490 
+lelbow 270 2 2 518 378 
+lelbow 0 2 2 658 406 
+straight 270 2 2 658 462 
+straight 270 2 2 658 434 
+straight 180 2 2 630 406 
+straight 180 2 2 602 406 
+straight 180 2 2 574 406 
+straight 90 2 2 518 406 
+straight 90 2 2 518 434 
+straight 90 2 2 518 462 
+straight 270 2 2 546 378 
+straight 270 2 2 546 350 
+straight 180 2 2 658 378 
+straight 180 2 2 630 378 
+straight 180 2 2 602 378 
+straight 180 2 2 574 378 
+straight 180 2 2 546 378 
+straight 90 2 2 686 322 
+straight 90 2 2 686 350 
+obranch 0 2 2 686 294 
+straight 0 2 2 714 294 
+straight 0 2 2 742 294 
+straight 0 2 2 770 294 
+straight 0 2 2 798 294 
+circuitout 90 2 2 826 294 
+:
+nor 658 294 
+nor 630 490 
+:
+SET
+258 505 24 
+RESET
+233 280 24 

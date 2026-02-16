@@ -1,0 +1,15 @@
+@images
+
+
+#repeated
+#ground.png		ground		repeat
+
+@fonts
+Monaco.ttf			debug
+
+
+
+@sounds
+
+
+

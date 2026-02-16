@@ -6,3 +6,4 @@ out
 .vscode
 *.piko
 *.xcode*
+backup source/

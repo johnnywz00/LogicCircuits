@@ -1,0 +1,86 @@
+circuitin 0 2 2 294 294 
+circuitin 0 2 2 294 378 
+circuitin 0 2 2 -966 -966 
+circuitin 0 2 2 -966 -966 
+obranch 0 2 2 378 322 
+obranch 0 2 -2 350 406 
+lelbow 180 2 2 378 462 
+elbow 0 2 2 350 266 
+lelbow 180 2 2 294 322 
+lelbow 180 2 2 294 406 
+elbow 90 2 2 546 434 
+elbow 90 2 2 630 294 
+elbow 180 2 2 546 518 
+elbow 270 2 2 210 518 
+elbow 180 2 2 630 546 
+elbow 270 2 2 294 546 
+straight 0 2 2 322 322 
+straight 0 2 2 350 322 
+straight 0 2 2 406 322 
+straight 0 2 2 434 322 
+straight 0 2 2 378 266 
+straight 0 2 2 406 266 
+straight 0 2 2 434 266 
+straight 0 2 2 322 406 
+straight 0 2 2 378 406 
+straight 0 2 2 406 406 
+straight 0 2 2 434 406 
+straight 270 2 2 350 378 
+straight 270 2 2 350 350 
+straight 270 2 2 350 322 
+straight 270 2 2 350 294 
+straight 90 2 2 630 322 
+straight 90 2 2 630 350 
+straight 90 2 2 630 378 
+straight 90 2 2 630 406 
+straight 90 2 2 630 434 
+straight 90 2 2 630 462 
+straight 90 2 2 630 490 
+straight 90 2 2 630 518 
+straight 180 2 2 602 546 
+straight 180 2 2 574 546 
+straight 180 2 2 546 546 
+straight 180 2 2 518 546 
+straight 180 2 2 490 546 
+straight 180 2 2 462 546 
+straight 180 2 2 434 546 
+straight 180 2 2 406 546 
+straight 180 2 2 378 546 
+straight 180 2 2 350 546 
+straight 180 2 2 322 546 
+straight 180 2 2 294 518 
+straight 180 2 2 266 518 
+straight 180 2 2 238 518 
+straight 180 2 2 518 518 
+straight 180 2 2 490 518 
+straight 180 2 2 462 518 
+straight 180 2 2 434 518 
+straight 180 2 2 406 518 
+straight 180 2 2 378 518 
+straight 180 2 2 350 518 
+straight 180 2 2 322 518 
+straight 270 2 2 294 518 
+straight 0 2 2 406 462 
+straight 0 2 2 434 462 
+straight 90 2 2 546 462 
+straight 90 2 2 546 490 
+straight 90 2 2 378 350 
+straight 90 2 2 378 378 
+straight 90 2 2 378 406 
+straight 90 2 2 378 434 
+circuitout 0 2 2 210 490 
+circuitout 0 2 2 294 490 
+gateoutput 0 2 2 602 294 
+gateoutput 0 2 2 518 434 
+:
+xor 602 294 
+and 518 434 
+:
+HALF ADDER
+798 178 24 
+Digit A
+172 268 24 
+Digit B
+173 347 24 
+2-bit Sum
+73 469 24 

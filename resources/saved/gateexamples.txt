@@ -1,0 +1,89 @@
+circuitin 270 2 2 210 266 
+circuitin 270 2 2 210 322 
+circuitin 270 2 2 266 630 
+circuitin 270 2 2 266 686 
+circuitin 270 2 2 602 238 
+circuitin 270 2 2 602 294 
+circuitin 270 2 2 1106 266 
+circuitin 270 2 2 1106 322 
+circuitin 270 2 2 770 630 
+circuitin 270 2 2 770 686 
+circuitin 270 2 2 1386 686 
+circuitout 90 2 2 378 294 
+circuitout 90 2 2 518 686 
+circuitout 90 2 2 854 294 
+circuitout 90 2 2 1022 658 
+circuitout 90 2 2 1358 294 
+circuitout 90 2 2 1526 686 
+straight 0 2 2 238 266 
+straight 0 2 2 238 322 
+straight 0 2 2 350 294 
+straight 0 2 2 630 294 
+straight 0 2 2 658 294 
+straight 0 2 2 686 294 
+straight 0 2 2 686 266 
+straight 0 2 2 826 294 
+straight 0 2 2 1134 266 
+straight 0 2 2 1134 322 
+straight 0 2 2 1330 294 
+straight 0 2 2 350 686 
+straight 0 2 2 322 686 
+straight 0 2 2 294 686 
+straight 0 2 2 350 658 
+straight 0 2 2 490 686 
+straight 0 2 2 826 686 
+straight 0 2 2 798 686 
+straight 0 2 2 854 686 
+straight 0 2 2 854 658 
+straight 0 2 2 994 658 
+straight 0 2 2 1414 686 
+straight 0 2 2 1498 686 
+straight 0 2 2 630 238 
+lelbow 180 2 2 658 266 
+lelbow 180 2 2 322 658 
+straight 0 2 2 798 630 
+straight 0 2 2 294 630 
+elbow 90 2 2 322 630 
+elbow 90 2 2 826 630 
+elbow 90 2 2 658 238 
+lelbow 180 2 2 826 658 
+elbow 0 2 2 798 434 
+straight 0 2 2 826 434 
+straight 0 2 2 854 434 
+straight 0 2 2 882 434 
+straight 0 2 2 910 434 
+straight 0 2 2 938 434 
+straight 0 2 2 966 434 
+elbow 90 2 2 994 434 
+straight 90 2 2 994 462 
+elbow 180 2 2 994 490 
+elbow 270 2 2 798 490 
+straight 180 2 2 966 490 
+straight 180 2 2 938 490 
+straight 180 2 2 910 490 
+straight 180 2 2 882 490 
+straight 180 2 2 854 490 
+straight 180 2 2 826 490 
+straight 270 2 2 798 462 
+:
+and 322 294 
+nand 462 686 
+or 798 294 
+nor 966 658 
+xor 1302 294 
+not 1470 686 
+:
+AND GATE
+251 173 24 
+OR GATE
+709 169 24 
+XOR GATE (exclusive OR)
+1130 167 24 
+NAND GATE (not-and)
+345 559 24 
+NOR GATE (not-or)
+853 559 24 
+NOT GATE
+1408 563 24 
+GATE EXAMPLES
+823 447 24 

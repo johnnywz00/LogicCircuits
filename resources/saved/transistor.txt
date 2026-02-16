@@ -1,0 +1,11 @@
+circuitin 270 2 2 546 266 
+circuitout 90 2 2 742 266 
+straight 0 2 2 574 266 
+straight 0 2 2 602 266 
+straight 0 2 2 686 266 
+straight 0 2 2 714 266 
+:
+not 658 266 
+:
+PNP TRANSISTOR
+564 142 24 
