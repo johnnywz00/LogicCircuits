@@ -6,9 +6,8 @@
 //  Copyright © 2025 John Ziegler. All rights reserved.
 //
 
-#include "InterconnectNode.hpp"
 #include "state.hpp"
-#include "timedeventmanager.hpp"
+
 
 Color InterconnectNode::circOffColor {250, 255, 240}; //{193, 183, 165};
 Color InterconnectNode::circOnColor {63, 149, 228};

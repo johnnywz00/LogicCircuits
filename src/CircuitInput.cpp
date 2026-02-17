@@ -6,7 +6,7 @@
 //  Copyright © 2025 John Ziegler. All rights reserved.
 //
 
-#include "CircuitInput.hpp"
+#include "state.hpp"
 
 CircuitTerminus::CircuitTerminus()
 {
@@ -16,7 +16,7 @@ CircuitTerminus::CircuitTerminus()
 	txt.setOutlineThickness(2);
 	centerOrigin(txt);
 	
-	txMapKey = "inout";
+	txMapKey = "termini";
 }
 
 Font& CircuitTerminus::getFont()

@@ -6,14 +6,12 @@
 //  Copyright © 2025 John Ziegler. All rights reserved.
 //
 
-#include "LogicGate.hpp"
-
-#include "timedeventmanager.hpp"
+#include "state.hpp"
 
 	/* Pixel offsets for where to start drawing
 	 * the supply lines that feed the gate
 	 */
-map<string, vecf> LogicGate::soMap = {
+map<string, vecF> LogicGate::soMap = {
 	{"not", {11, 52}},
 	{"and", {27, 58}},
 	{"nand", {15, 52}},
@@ -22,11 +20,11 @@ map<string, vecf> LogicGate::soMap = {
 	{"xor", {46, 64}}
 };
 
-void LogicGate::initialize(GatePtr& gateptr, const string& tag, int x, int y, map<string, Texture>& m, const Sprite& cspr)
+void LogicGate::initialize(GatePtr& gateptr, const string& tag, int x, int y, const Sprite& cspr)
 {
 	auto state = State::getSelf();
 	name = tag;
-	spr.setTexture(m[tag]);
+	spr.setTexture(gTexture(tag));
 //	auto sz = spr->getTexture()->getSize();
 //	spr->setTextureRect(IntRect(0, 0, sz.x, sz.y));
 	spr.setOrigin(cspr.getOrigin());
@@ -35,15 +33,15 @@ void LogicGate::initialize(GatePtr& gateptr, const string& tag, int x, int y, ma
 //	gate->setXformedString();
 	state->icNodes.push_back(make_shared<GateInput>());
 	inputA = state->icNodes.back();
-	initializeGateNode(inputA, gateptr, m);
+	initializeGateNode(inputA, gateptr);
 	inputA->name = "gateinput";
 	state->icNodes.push_back(make_shared<GateInput>());
 	inputB = state->icNodes.back();
-	initializeGateNode(inputB, gateptr, m);
+	initializeGateNode(inputB, gateptr);
 	inputB->name = "gateinput";
 	state->icNodes.push_back(make_shared<GateOutput>());
 	output1 = state->icNodes.back();
-	initializeGateNode(output1, gateptr, m);
+	initializeGateNode(output1, gateptr);
 	output1->name = "gateoutput";
 	setPosition(x, y);
 	supplyOffset = soMap[name];
@@ -66,10 +64,10 @@ void LogicGate::setPosition(float x, float y)
 	inputA->gridPos = {gp + gridOffsets().first};
 	state->gridLocs.emplace(inputA->gridPos, inputA);
 	float factor = state->baseCellSize * state->gridScale.x;
-	inputA->spr.setPosition(newPos + vecf{gridOffsets().first * factor});
+	inputA->spr.setPosition(newPos + vecF{gridOffsets().first * factor});
 	inputB->gridPos = {gp + gridOffsets().second};
 	state->gridLocs.emplace(inputB->gridPos, inputB);
-	inputB->spr.setPosition(newPos + vecf{gridOffsets().second * factor});
+	inputB->spr.setPosition(newPos + vecF{gridOffsets().second * factor});
 	output1->gridPos = {gp};
 	state->gridLocs.emplace(output1->gridPos, output1);
 	output1->spr.setPosition(newPos);
@@ -77,10 +75,10 @@ void LogicGate::setPosition(float x, float y)
 	updateRects();
 }
 
-void LogicGate::initializeGateNode(ICNodePtr& node, GatePtr& gate, map<string, Texture>& m)
+void LogicGate::initializeGateNode(ICNodePtr& node, GatePtr& gate)
 {
 	Sprite* spr = &node->spr;
-	spr->setTexture(m["ic"]);
+	spr->setTexture(gTexture("interconnects"));
 	spr->setTextureRect(IntRect(14, 0, 14, 14));
 	centerOrigin(*spr);
 	spr->setRotation(0);
@@ -112,7 +110,7 @@ void NotGate::draw(RenderTarget& win, RenderStates st) const
 		RectangleShape r {{4, 4}};
 		r.setFillColor(Color::Black);
 		r.setScale(State::getSelf()->gridScale);
-		r.setPosition(cornerToOgnCoords(vecf(2, 26)));
+		r.setPosition(cornerToOgnCoords(vecF(2, 26)));
 		win.draw(r);
 	}
 }
@@ -122,7 +120,7 @@ vector<RectangleShape> LogicGate::dataToRectShapes(intvec data)
 	vector<RectangleShape> ret;
 	for (int i = 0; i < data.size(); i += 4) {
 		RectangleShape r {{(float)data[i + 2], (float)data[i + 3]}};
-		r.setPosition(cornerToOgnCoords(vecf(data[i], data[i + 1])));
+		r.setPosition(cornerToOgnCoords(vecF(data[i], data[i + 1])));
 		// add pvec to setposition to handle rotation
 		//rotate actual rectangles
 		r.setScale(State::getSelf()->gridScale);
@@ -132,7 +130,7 @@ vector<RectangleShape> LogicGate::dataToRectShapes(intvec data)
 	return ret;
 }
 
-vecf LogicGate::cornerToOgnCoords(vecf fromCorner) const
+vecF LogicGate::cornerToOgnCoords(vecF fromCorner) const
 {
 	auto scale = State::getSelf()->gridScale.x;
 	return {spr.getPosition() - spr.getOrigin() * scale + fromCorner * scale};

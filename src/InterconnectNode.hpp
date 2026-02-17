@@ -9,14 +9,12 @@
 #ifndef InterconnectNode_hpp
 #define InterconnectNode_hpp
 
-#include "jwzsfml.hpp"
-
+#include "state.hpp"
 
 class InterconnectNode;
-class State;
-
+class ICInput;
 using ICNodePtr = shared_ptr<InterconnectNode>;
-
+using ICInputPtr = shared_ptr<ICInput>;
 
 
 class ICInput
@@ -26,9 +24,6 @@ public:
 	int status = -1;
 	weak_ptr<InterconnectNode> parent;
 };
-
-using ICInputPtr = shared_ptr<ICInput>;
-
 
 
 
@@ -96,9 +91,9 @@ public:
 	int 		nodeID;
 	string		name;
 	bool		isActive = true;
-	VecfMM 		gridPos {vecf(-1, -1)};
+	VecfMM 		gridPos {vecF(-1, -1)};
 	Sprite 		spr;
-	string		txMapKey {"ic"};
+	string		txMapKey {"interconnects"};
 	string		xformedStr;
 	int 		inputCt;
 	int 		outputCt;

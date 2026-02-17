@@ -1,37 +1,30 @@
 #ifndef LOGIC_CIRCUITS_H
 #define LOGIC_CIRCUITS_H
 
+#include "jwzsfml.hpp"
+#include "timedeventmanager.hpp"
+#include "resourcemanager.hpp"
 
 #include "InterconnectNode.hpp"
 #include "LogicGate.hpp"
 #include "CircuitInput.hpp"
 #include "buttons.hpp"
 
-class SFGameWindow;
-class TimedEventManager;
 
-class CircuitTerminus;
-class CircuitInput;
-class CircuitOutput;
-class LogicGate;
+class FullscreenOnlyApp;
 
-class State {
+
+class State
+{
 public:
+	static constexpr int baseCellSize = 14;
 
-//==============  BOILERPLATE =======================
-//==============              ======================
+	static State* getSelf () { return instance_; }
 
+/* Methods called by FullscreenOnlyApp */
 	void onCreate ();
 	
-	void reset ();
-	
-	void debugTxtSetup ();
-	
-	void loadFonts ();
-	
-	void loadTextures ();
-	
-	void loadSounds ();
+	bool handleTextEvent (Event&);
 	
 	void onMouseDown (int x, int y);
 	
@@ -45,48 +38,48 @@ public:
 	
 	void draw ();
 	
+/* Methods called by editor classes */
+	vecF toGridPos (int mousex, int mousey)
+	{
+		return {float(mousex / cellSize()), float(mousey / cellSize())};
+	}
 	
-	RenderWindow*  		 	w;
-	SFGameWindow* 		 	gw;
-	TimedEventManager*      timedMgr;
-	int             	 	mx = 0,
-	my = 0,
-	mxOld = 0,
-	myOld = 0;
+	vecF alignToGrid (int mousex, int mousey)
+	{
+		return {
+			float(mousex - mousex % cellSize() + cellSize() / 2),
+			float(mousey - mousey % cellSize() + cellSize() / 2)
+		};
+	}
 	
-	map<string, Font> 			fontMap;
-	static const vector<pair<string, string>>
-	fontList;
+	void removeNodeFromGrid (ICNodePtr& node);
+
 	
-	map<string, Texture> 		txMap;
-	static const vector<pair<string, string>>
-	txList;
+	RenderWindow*  		 			rwin;
+	FullscreenOnlyApp* 				app;
+	TimedEventManager*      		timedMgr;
 	
-	vector<SoundBuffer> 		buffers;
-	map<string, Sound> 			soundMap;
-	static const vector<pair<string, string>>
-	soundList;
-	
-	static State* getSelf () { return instance_; }
-	static State* instance_;
-//================== END BOILERPLATE =================
-//====================================================
-	
-	
-	vector<ICNodePtr> 					icNodes;
-	vector<shared_ptr<CircuitTerminus>>	termini;
-	vector<shared_ptr<LogicGate>> 		logicGates;
-	vector<ICNodeButton> 				icButtons;
-	vector<Textbox> 					labels;
-	vector<RectangleShape> 				rects;
-	vector<shared_ptr<Drawable>>		ghosts;
-	vector<string> 						icToolTags {
-		"elbow", "straight", "obranch", "mtee", "stee", "ibranch", "lelbow",  "circuitin", "circuitout", "not", "and", "nand", "or", "nor", "xor"
+	vector<ICNodePtr> 				icNodes;
+	multimap<VecfMM, ICNodePtr> 	gridLocs;
+
+	string 							mode;
+	vecF							gridScale {2, 2};
+	vecI							oldMouse
+									, mouseVec
+	;
+	bool							animateFlow = true;
+
+private:
+	const vector<string> 	icToolTags {
+		"elbow", "straight", "obranch", "mtee", "stee", "ibranch", 
+		"lelbow",  "circuitin", "circuitout", "not", "and", "nand",
+		"or", "nor", "xor"
 	};
-	vector<vecf> 						gateOrigins {
-		{21, 28}, {35, 28}, {49, 33}, {49, 29}, {49, 16}, {77, 29}
+	const vector<vecF> 		gateOrigins {
+		{21, 28}, {35, 28}, {49, 33},
+		{49, 29}, {49, 16}, {77, 29}
 	};
-	vector<IntRect> 					icToolTxRects {
+	const vector<IntRect> 	icToolTxRects {
 		{0, 14, 14, 14},
 		{14, 14, 14, 14},
 		{14 * 2, 14, 14, 14},
@@ -97,84 +90,11 @@ public:
 		{0, 0, 20, 20},
 		{20, 0, 20, 20}
 	};
-	multimap<VecfMM, ICNodePtr> 		gridLocs;
 	
-	static constexpr int baseCellSize = 14;
-	Sprite				cursorSprite;
-	RectangleShape		cursorShadow;
-	RectangleShape		toolPane;
-	bool 				isCursorVisible = true;
-	string				curTool = "select";
-	string				storedTool = "select";
-	bool 				oldCursor = true;
-	bool				draggingICTool = false;
-	bool				drawingRect = false;
-	vecf				lastCreateLoc;
-	ICNodePtr 			clickDraggedIC {nullptr};
-	shared_ptr<LogicGate> clickDraggedGate {nullptr};
-	Textbox*			clickDraggedLabel {nullptr};
-	VertexArray			gridLinesVtcl {Lines};
-	VertexArray			gridLinesHztl {Lines};
-	vecf				gridScale {2, 2};
-	string 				mode = "edit";
-	bool				useDirArrows = true;
-	bool				animateFlow = true;
 
-	Textbox				filenameTbox;
-	Textbox*			activeTbox {nullptr};
+	int cellSize () { return baseCellSize * gridScale.x; }
 	
-	void toggleMode();
-	
-	void handleErase(int x, int y);
-	
-	int cellSize() { return baseCellSize * gridScale.x; }
-	
-	vecf alignToGrid(int mousex, int mousey)
-	{
-		return {
-			float(mousex - mousex % cellSize() + cellSize() / 2),
-			float(mousey - mousey % cellSize() + cellSize() / 2)
-		};
-	}
-	
-	vecf toGridPos(int mousex, int mousey)
-	{
-		return {float(mousex / cellSize()), float(mousey / cellSize())};
-	}
-	
-	void showCursor(bool stat)
-	{
-		w->setMouseCursorVisible(stat);
-		isCursorVisible = stat;
-	}
-	
-	void redrawGrid();
-	
-	void setNodePosition(ICNodePtr& node, float x, float y);
-		
-	void removeNodeFromGrid(ICNodePtr& node)
-	{
-		auto eqr = gridLocs.equal_range(node->gridPos);
-		for (auto itr = eqr.first; itr != eqr.second; ++itr) {
-			if (itr->second == node) {
-				gridLocs.erase(itr);
-				break;
-			}
-		}
-	}
-	
-	void propagateAll();
-	
-	void initializeNode(ICNodePtr&, string, int x, int y);
-	
-	void linkICNodes();
-	
-	void setTool(ICNodeButton&);
-	void setTool(string);
-	
-	void createLabel(bool activate = true);
-	
-	char oppositeDirTo(char dir)
+	char oppositeDirTo (char dir)
 	{
 		switch(dir) {
 			case 'n': return 's';
@@ -185,51 +105,96 @@ public:
 		}
 		return dir;
 	}
+
+	void debugTxtSetup ();
 	
-	void changeViewSize()
+	void reset ();
+	
+	void toggleMode ();
+	
+	void showCursor (bool stat)
 	{
-		View vw {w->getView()};
-		auto sz = vw.getSize();
-		float ratio = sz.y / sz.x;
-		vw.setSize(sz.x + 10 * (iKP(LShift) ? 1 : -1), sz.y + (10 * ratio) * (iKP(LShift) ? 1 : -1));
-		w->setView(vw);
+		rwin->setMouseCursorVisible(stat);
+		isCursorVisible = stat;
 	}
 	
-	void saveCircuit();
+	void redrawGrid ();
 	
-	bool loadCircuit();
+	void setTool (ICNodeButton&);
+	void setTool (string);
 	
-	void createNode(string type)
+	void createNode (string type)
 	{
 		if (nodeFactoryMap.count(type))
 			icNodes.push_back(nodeFactoryMap[type]());
 		else cerr << "Node type not found. " << type << endl;
 	}
 	
-	void createGate(string type)
+	void createGate (string type)
 	{
 		if (gateFactoryMap.count(type))
 			logicGates.push_back(gateFactoryMap[type]());
 		else cerr << "Gate type not found. " << type << endl;
 	}
 	
-	shared_ptr<Sprite> makeSpriteGhost(Sprite& src);
+	void initializeNode (ICNodePtr&, string, int x, int y);
+	
+	void setNodePosition (ICNodePtr& node, float x, float y);
+	
+	void linkICNodes ();
+	
+	void createLabel (bool activate = true);
+	
+	void handleErase (int x, int y);
+	
+	shared_ptr<Sprite> makeSpriteGhost (Sprite& src);
+	
+	void propagateAll ();
+		
+	void changeViewSize ();
+	
+	bool loadCircuit ();
+	
+	void saveCircuit ();
+	
 
+	static inline State* 			instance_ = nullptr;
+	static map<string, function<ICNodePtr(void)>>
+									nodeFactoryMap;
+	static map<string, function<GatePtr(void)>>
+									gateFactoryMap;
 	
-	static map<string, function<ICNodePtr(void)>> nodeFactoryMap;
+	vector<TerminusPtr>				termini;
+	vector<GatePtr> 				logicGates;
+	vector<ICNodeButton> 			icButtons;
+	vector<Textbox> 				labels;
+	vector<RectangleShape> 			rects;
+	vector<shared_ptr<Drawable>>	ghosts;
+	Sprite							cursorSprite;
+	RectangleShape					cursorShadow;
+	RectangleShape					toolPane;
+	Textbox							filenameTbox;
+	Text    						mouseTxt
+									, debugTxt
+	;
+	VertexArray						gridLinesVtcl {Lines};
+	VertexArray						gridLinesHztl {Lines};
 	
-	static map<string, function<shared_ptr<LogicGate>(void)>> gateFactoryMap;
-	
-	
-	
-////////////  DEBUG  /////////////////////
 
-	Font    			 font;
-	Text    			 mouseTxt,
-						 debugTxt;
+	ICNodePtr 						clickDraggedIC {nullptr};
+	GatePtr 						clickDraggedGate {nullptr};
+	Textbox*						clickDraggedLabel {nullptr};
+	Textbox*						activeTbox {nullptr};
 
+	string							curTool;
+	string							storedTool;
+	vecF							lastCreateLoc;
+	bool 							isCursorVisible = true;
+	bool 							oldCursor = true;
+	bool							draggingICTool = false;
+	bool							drawingRect = false;
+	bool							useDirArrows = true;
 }; //end class State
-
 
 #endif
 

@@ -2,103 +2,62 @@
 #include "sfmlApp.hpp"
 
 
-SFGameWindow::SFGameWindow ()
+FullscreenOnlyApp::FullscreenOnlyApp ()
 {
-	setup(defaultTitle, vecU(defaultWidth, defaultHeight));
-}
-
-SFGameWindow::SFGameWindow (const string& title, const vecU& size)
-{
-	setup(title, size);
-}
-	
-void SFGameWindow::setup (const string& title, const vecU& size)
-{
-	windowTitle = title;
-	windowSize = size;
-	_isFullscreen = true;
-	_isDone = false;
-	_isFocused = true;
-	create();
-#ifdef EMBEDDED_HPP
-	if (!loadByMethod(icon, iconPath))
-#else
-	if (!icon.loadFromFile(iconPath))
-#endif
-		cerr << "Couldn\'t load icon! \n";
-	else window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
-}
-
-void SFGameWindow::create ()
-{
-    VideoMode mode = VideoMode::getDesktopMode();
+	VideoMode mode = VideoMode::getDesktopMode();
 	auto style = Style::Default;
-
-	if (_isFullscreen) {
-		auto fsmodes = VideoMode::getFullscreenModes();
-		if (fsmodes.size()) {
-			mode = fsmodes[0];
-			style = Style::Fullscreen;
-		}
-		else _isFullscreen = false;
+	auto fsmodes = VideoMode::getFullscreenModes();
+	if (fsmodes.size()) {
+		mode = fsmodes[0];
+		style = Style::Fullscreen;
 	}
-	window.create(mode, windowTitle, style);
-	window.setFramerateLimit(60);
-}
+	window.create(mode, "", style);
 	
-void SFGameWindow::toggleFullscreen ()
-{
-	_isFullscreen = !_isFullscreen;
-	destroy();
-	create();
-}
-
-
-Game::Game ()
-	: window()
-{
+	window.setFramerateLimit(60);
+	
+	if (!icon.loadFromFile((Resources::executingDir() / "resources" / "images" / "icon.png").string()))
+		cerr << "Couldn't load icon. " << endl;
+	else
+		window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+	
     srand(unsigned(time(nullptr)));
-    state.w = window.getRenderWindow();
-	state.gw = &window;
+		
+    state.rwin = &window;
+	state.app = this;
 	state.timedMgr = &timedMgr;
+
     state.onCreate();
+	
     clock.restart();
 }
 
-void Game::update ()
+void FullscreenOnlyApp::run ()
 {
-	state.mxOld = state.mx;
-	state.myOld = state.my;
+	cout << "Entering app.run()\n";
+	while (!isDone) {
+		update();
+		
+		window.clear(redrawColor);
+		state.draw();
+		window.display();
+		
+		elapsed += clock.restart();
+	}
+	cout << "Leaving app.run()\n";
+}
+
+void FullscreenOnlyApp::update ()
+{
+	state.oldMouse = state.mouseVec;
     Event event;
-    while (window.window.pollEvent(event)) {
-		vecf adj = window.window.mapPixelToCoords(vecI(event.mouseButton.x,
-													   event.mouseButton.y));
-		if (state.activeTbox
-				&& (event.type == Event::TextEntered
-					|| event.type == Event::KeyPressed
-					|| event.type == Event::KeyReleased)) {
-			if (event.type == Event::TextEntered) {
-				if (event.text.unicode == 8)
-					if (iKP(LShift))
-						state.activeTbox->clear();
-					else state.activeTbox->deleteLastChar();
-				else if (event.text.unicode == 9) ; // Don't write the \t
-				else state.activeTbox->appendText(event.text.unicode);
-			}
-			if (event.type == Event::KeyPressed && (event.key.code == Keyboard::Escape || event.key.code == Keyboard::Enter)) {
-				state.activeTbox->setActive(false);
-				state.activeTbox = nullptr;
-			}
-			
-		}
-		else {
+    while (window.pollEvent(event)) {
+		vecF adj = window.mapPixelToCoords(vecI(event.mouseButton.x,
+												event.mouseButton.y));
+		if (!state.handleTextEvent(event)) {
 			switch(event.type) {
-	
+					
 				case Event::KeyPressed:
 					switch(event.key.code) {
-						case Keyboard::F5:
-							window.toggleFullscreen();
-							break;
 						default:
 							state.onKeyPress(event.key.code);
 							break;
@@ -106,11 +65,7 @@ void Game::update ()
 					break;
 					
 				case Event::KeyReleased:
-					switch(event.key.code) {
-						default:
-							state.onKeyRelease(event.key.code);
-							break;
-					}
+					state.onKeyRelease(event.key.code);
 					break;
 					
 				case Event::MouseButtonPressed:
@@ -122,22 +77,13 @@ void Game::update ()
 					break;
 					
 				case Event::MouseMoved:
-					adj = window.window.mapPixelToCoords(vecI(event.mouseMove.x,
-															  event.mouseMove.y));
-					state.mx = int(adj.x);
-					state.my = int(adj.y);
+					adj = window.mapPixelToCoords(vecI(event.mouseMove.x,
+													   event.mouseMove.y));
+					state.mouseVec = toVecI(adj);
 					break;
 					
 				case Event::Closed:
-					window.close();
-					break;
-					
-				case Event::LostFocus:
-					window._isFocused = false;
-					break;
-					
-				case Event::GainedFocus:
-					window._isFocused = true;
+					close();
 					break;
 					
 				default:
@@ -149,18 +95,38 @@ void Game::update ()
 }
 
 
-
-int main ()
+int main (int argc, char* argv[])
 {
+/* XCode folly: two instances of the program are launched if
+ * we customize the working directory. We can cause the extraneous
+ * instance to silently quit immediately by giving it a relative
+ * path that it can't find.
+ */
+#ifdef DEBUG
     Image img;
-	if (!img.loadFromFile(iconPath))
-        return EXIT_FAILURE;
-    
+	if (!img.loadFromFile("resources/images/icon.png")) {
+		cerr << "DEBUG preprocessor symbol is defined, but icon.png can't be found through relative path.\n";
+		return EXIT_FAILURE;
+	}
+#endif
+	
+	cout << "Initializing Resources\n";
+	Resources::initialize(argc, argv);
 
-    Game game;
-    while (!game.getWindow()->isDone()) {
-        game.update();
-        game.render();
-        game.lateUpdate();
-    }
+	FullscreenOnlyApp app;
+	
+	cout << "Preparing to launch game loop for LogicCircuits\n";
+	try {
+		app.run();
+		cout << "Exited LogicCircuits loop\n";
+	}
+	catch (std::runtime_error& e) {
+		cerr << "Caught runtime exception: " << e.what() << endl;
+	}
+	catch (std::exception& e) {
+		cerr << "Caught exception: " << e.what() << endl;
+	}
+	catch (...) {
+		cerr << "Caught unknown exception\n";
+	}
 }

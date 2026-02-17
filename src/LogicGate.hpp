@@ -9,13 +9,11 @@
 #ifndef LogicGate_hpp
 #define LogicGate_hpp
 
-#include "InterconnectNode.hpp"
 #include "state.hpp"
 
-class State;
+
 class LogicGate;
 using GatePtr = shared_ptr<LogicGate>;
-
 
 
 class GateICNode : public InterconnectNode
@@ -60,15 +58,15 @@ public:
 	
 	virtual void calcAndSetOutput(int& outStatus) { }
 	
-	virtual void initialize(GatePtr&, const string&, int x, int y, map<string, Texture>&, const Sprite&);
+	virtual void initialize(GatePtr&, const string&, int x, int y, const Sprite&);
 	
 	virtual void setPosition(float x, float y);
 	
-	void initializeGateNode(ICNodePtr&, GatePtr&, map<string, Texture>&);
+	void initializeGateNode(ICNodePtr&, GatePtr&);
 	
 	void drawSupplyLines(RenderWindow*);
 	
-	virtual pair<vecf, vecf> gridOffsets() = 0;
+	virtual pair<vecF, vecF> gridOffsets() = 0;
 	
 	Sprite spr; // transistors and tracks
 	Sprite gateShape;
@@ -79,8 +77,8 @@ public:
 	vector<RectangleShape> flowRects;
 	string name;
 	bool isActive = true;
-	vecf supplyOffset;
-	static map<string, vecf> soMap;
+	vecF supplyOffset;
+	static map<string, vecF> soMap;
 	
 protected:
 	int signalCt = 0;
@@ -94,7 +92,7 @@ protected:
 		return vecPlusEqVec(vec, dataToRectShapes(data));
 	}
 	
-	vecf cornerToOgnCoords(vecf fromCorner) const;
+	vecF cornerToOgnCoords(vecF fromCorner) const;
 };
 
 
@@ -123,7 +121,7 @@ public:
 		}
 	}
 	
-	pair<vecf, vecf> gridOffsets() override { return {{-1, 0}, {-999999, -999999}}; }
+	pair<vecF, vecF> gridOffsets() override { return {{-1, 0}, {-999999, -999999}}; }
 };
 
 
@@ -155,7 +153,7 @@ public:
 		outStatus = A() && B() ? 1 : 0;
 	}
 	
-	pair<vecf, vecf> gridOffsets() override { return {{-2, -1}, {-2, 1}}; }
+	pair<vecF, vecF> gridOffsets() override { return {{-2, -1}, {-2, 1}}; }
 };
 
 
@@ -183,7 +181,7 @@ public:
 		outStatus = A() || B() ? 1 : 0;
 	}
 	
-	pair<vecf, vecf> gridOffsets() override { return {{-3, -1}, {-3, 0}}; }
+	pair<vecF, vecF> gridOffsets() override { return {{-3, -1}, {-3, 0}}; }
 };
 
 
@@ -218,7 +216,7 @@ public:
 		outStatus = A() != B() ? 1 : 0;
 	}
 	
-	pair<vecf, vecf> gridOffsets() override { return {{-5, -1}, {-5, 1}}; }
+	pair<vecF, vecF> gridOffsets() override { return {{-5, -1}, {-5, 1}}; }
 };
 
 
@@ -246,7 +244,7 @@ public:
 		outStatus = !(A() && B()) ? 1 : 0;
 	}
 	
-	pair<vecf, vecf> gridOffsets() override { return {{-3, -1}, {-3, 0}}; }
+	pair<vecF, vecF> gridOffsets() override { return {{-3, -1}, {-3, 0}}; }
 };
 
 
@@ -274,7 +272,7 @@ public:
 		outStatus = !(A() || B()) ? 1 : 0;
 	}
 	
-	pair<vecf, vecf> gridOffsets() override { return {{-3, 0}, {-3, 1}}; }
+	pair<vecF, vecF> gridOffsets() override { return {{-3, 0}, {-3, 1}}; }
 };
 
 

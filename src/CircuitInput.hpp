@@ -9,10 +9,11 @@
 #ifndef CircuitInput_hpp
 #define CircuitInput_hpp
 
-//#include "InterconnectNode.hpp"
 #include "state.hpp"
 
-class State;
+class CircuitTerminus;
+using TerminusPtr = shared_ptr<CircuitTerminus>;
+
 
 class CircuitTerminus : public InterconnectNode
 {
@@ -38,6 +39,8 @@ public:
 	static Font& getFont();
 	Text		txt;
 };
+
+
 
 class CircuitInput : public CircuitTerminus
 {

@@ -1,15 +1,23 @@
 @images
-
+gates.png	gateButtons
+ic.png		interconnects
+inout.png	termini
+or.png		or
+and.png		and
+not.png		not
+nand.png	nand
+nor.png		nor
+xor.png		xor
 
 #repeated
 #ground.png		ground		repeat
 
 @fonts
-Monaco.ttf			debug
-
+Monaco.ttf		debug
+Abadi.ttf		label
 
 
 @sounds
-
+savefile.mp3	save
 
 

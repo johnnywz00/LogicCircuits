@@ -9,13 +9,12 @@
 #ifndef buttons_hpp
 #define buttons_hpp
 
-#include "jwzsfml.hpp"
-
+#include "state.hpp"
 
 class ICNodeButton
 {
 public:
-	ICNodeButton( string tag_, const Texture& tx, vecf pos, vecf txRect, bool is20 = false)
+	ICNodeButton( string tag_, const Texture& tx, vecF pos, vecF txRect, bool is20 = false)
 		: tag(tag_)
 	{
 		spr.setTexture(tx);
@@ -28,14 +27,10 @@ public:
 		cursorOgn = spr.getOrigin();
 	}
 	
-	vecf  cursorOgn;
+	vecF  cursorOgn;
 	Sprite spr;
 	string tag;
 	bool isGate = false;
 };
-
-
-
-
 
 #endif /* buttons_hpp */
