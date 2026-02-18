@@ -181,7 +181,7 @@ void State::onMouseDown (int x, int y)
 			if (!settingActive) {
 				activeTbox = nullptr;
 				if (!startingDrag) {
-					if (iKP(LShift))
+					if (isShiftPressed())
 						createLabel();
 				}
 			}
@@ -216,7 +216,7 @@ void State::onKeyPress(Keyboard::Key k)
 {
 	switch(k) {
 		case Keyboard::Escape:
-			if (isCmdPressed())
+			if (isShiftPressed())
 				app->close();
 			else if (curTool != "select") {
 				curTool = "select";
@@ -403,21 +403,21 @@ void State::update (const Time& time)
 		oss<<"ghosts size: "<<ghosts.size()<<'\n';
 		for(auto& node : icNodes) {
 			if(node->spr.gGB().contains(mouseVec.x, mouseVec.y)) {
-				oss<<node->name<<'\n'<<node->xformedStr <<"\ngridPos: "<<node->gridPos.vec.x<< ", " <<node->gridPos.vec.y<<"\nID: "<<node->nodeID<<'\n'<<"in1 status: "<<node->input1->status<<'\n';
+				oss << node->name << '\n' << node->xformedStr << "\ngridPos: " << node->gridPos.vec.x << ", " << node->gridPos.vec.y << "\nID: " << node->nodeID << '\n' << "in1 status: " << node->input1->status << '\n';
 				auto twoIn = dynamic_pointer_cast<TwoInputICNode>(node);
 				if (twoIn)
-					oss<<"in2 status: "<<twoIn->input2->status;
+					oss << "in2 status: " << twoIn->input2->status << '\n';
 				
-				oss<<"out1 ID: ";
+				oss << "out1 ID: ";
 				if (!node->output1.lock())
-					oss<<"NULL\n";
-				else oss<<node->output1.lock()->parent.lock()->nodeID<<"\nout1 status: "<<node->output1.lock()->status<<'\n';
+					oss << "NULL\n";
+				else oss << node->output1.lock()->parent.lock()->nodeID << "\nout1 status: " << node->output1.lock()->status << '\n';
 				auto twoOut = dynamic_pointer_cast<TwoOutputICNode>(node);
 				if (twoOut) {
-					oss<<"out2 ID: ";
+					oss << "out2 ID: ";
 					if (!twoOut->output2.lock())
-						oss<<"NULL\n";
-					else oss<<twoOut->output2.lock()->parent.lock()->nodeID<<"\nout2 status: "<<twoOut->output2.lock()->status<<'\n';
+						oss << "NULL\n";
+					else oss << twoOut->output2.lock()->parent.lock()->nodeID << "\nout2 status: " << twoOut->output2.lock()->status << '\n';
 				}
 				break;
 			}
@@ -779,12 +779,11 @@ bool State::loadCircuit()
 {
 	reset();
 	
-	string fname = "saved/circuit1.txt";
+	string fname = "circuit1.txt";
 	auto btxt = filenameTbox.boxTxt.getString();
 	if (!btxt.isEmpty())
-		fname = "saved/" + string(btxt) + ".txt";
-	std::ifstream circData;
-	circData.open(fname);
+		fname = string(btxt) + ".txt";
+	std::ifstream circData {Resources::executingDir() / "resources" / "saved" / fname};
 	if (!circData.is_open()) {
 		cerr << "Couldn't load saved file. \n";
 		return;
@@ -860,11 +859,11 @@ bool State::loadCircuit()
 void State::saveCircuit()
 {
 	static int saveCt = 0;
-	string fname = "saved/circuit" + tS(++saveCt) + ".txt";
+	string fname = "circuit" + tS(++saveCt) + ".txt";
 	auto btxt = filenameTbox.boxTxt.getString();
 	if (!btxt.isEmpty())
-		fname = "saved/" + string(btxt) + ".txt";
-	ofstream fs{fname, std::ios_base::trunc};
+		fname = string(btxt) + ".txt";
+	ofstream fs{Resources::executingDir() / "resources" / "saved" / fname, std::ios_base::trunc};
 	for (auto& node : icNodes) {
 		if (node->name == "gateinput" || node->name == "gateoutput")
 			continue;
