@@ -15,21 +15,25 @@ class InterconnectNode;
 class ICInput;
 using ICNodePtr = shared_ptr<InterconnectNode>;
 using ICInputPtr = shared_ptr<ICInput>;
+using ICInputWkPtr = weak_ptr<ICInput>;
 
 
 class ICInput
 {
 public:
-	ICInput () { }
 	int status = -1;
 	weak_ptr<InterconnectNode> parent;
 };
 
 
 
-class InterconnectNode : public Drawable, public enable_shared_from_this<InterconnectNode>
+class InterconnectNode 	: public Drawable
+						, public enable_shared_from_this<InterconnectNode>
 {
 public:
+	static inline const Color 	circOffColor {250, 255, 240}; //{193, 183, 165};
+	static inline const Color 	circOnColor {63, 149, 228};
+
 	InterconnectNode(int inputct = 1, int outputct = 1)
 		: input1(make_shared<ICInput>())
 	{
@@ -41,10 +45,9 @@ public:
 	
 	virtual ~InterconnectNode() = default;
 	
-	virtual void initInputs ()
-	{
-		input1->parent = weak_from_this();
-	}
+	static void resetNextID() { nextID = 0; }
+
+	virtual void initInputs () { input1->parent = weak_from_this(); }
 	
 	void draw(RenderTarget& win, RenderStates st) const override
 	{
@@ -84,21 +87,19 @@ public:
 
 	virtual void propagateOutput();
 	
-	static void resetNextID() { nextID = 0; }
 	
-	static Color circOffColor; //{193, 183, 165};
-	static Color circOnColor;
-	int 		nodeID;
-	string		name;
-	bool		isActive = true;
-	VecfMM 		gridPos {vecF(-1, -1)};
-	Sprite 		spr;
-	string		txMapKey {"interconnects"};
-	string		xformedStr;
-	int 		inputCt;
-	int 		outputCt;
-	ICInputPtr  	input1;
-	weak_ptr<ICInput> 	output1;
+	
+	Sprite 				spr;
+	ICInputPtr  		input1;
+	ICInputWkPtr 		output1;
+	string				name;
+	string				txMapKey {"interconnects"};
+	string				xformedStr;
+	VecfMM 				gridPos {vecF(-1, -1)};
+	int 				nodeID;
+	int 				inputCt;
+	int 				outputCt;
+	bool				isActive = true;
 	
 	void setXformedString()
 	{
@@ -127,10 +128,12 @@ private:
 class TwoOutputICNode : public InterconnectNode
 {
 public:
-	TwoOutputICNode() : InterconnectNode(1, 2) { }
-	weak_ptr<ICInput> output2;
+	TwoOutputICNode()
+		: InterconnectNode(1, 2)
+	{ }
 	
-	ICInputPtr getOutput_ (int idx) override {
+	ICInputPtr getOutput_ (int idx) override
+	{
 		if (idx == 0) {
 			auto sp = output1.lock();
 			return sp ? sp : nullptr;
@@ -148,6 +151,8 @@ public:
 		else if (idx == 1)
 			output2 = dest;
 	}
+
+	ICInputWkPtr 		output2;
 };
 
 
@@ -159,6 +164,9 @@ public:
 		: InterconnectNode(2, 1)
 		, input2(make_shared<ICInput>())
 	{ }
+	
+	//IS MAKESHARED OKAY IN CONSTRUCTOR;
+	//is weakfromthis okay here
 	
 	void initInputs () override
 	{

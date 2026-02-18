@@ -6,6 +6,7 @@
 void State::onCreate ()
 {
 	instance_ = this;
+	timedMgr->setCapacity(25000);
 	
 	debugTxtSetup();
 

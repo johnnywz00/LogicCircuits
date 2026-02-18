@@ -9,8 +9,8 @@
 #include "state.hpp"
 
 
-Color InterconnectNode::circOffColor {250, 255, 240}; //{193, 183, 165};
-Color InterconnectNode::circOnColor {63, 149, 228};
+//Color InterconnectNode::circOffColor {250, 255, 240}; //{193, 183, 165};
+//Color InterconnectNode::circOnColor {63, 149, 228};
 
 void InterconnectNode::propagateOutput()
 {

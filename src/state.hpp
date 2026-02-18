@@ -179,7 +179,6 @@ private:
 	;
 	VertexArray						gridLinesVtcl {Lines};
 	VertexArray						gridLinesHztl {Lines};
-	
 
 	ICNodePtr 						clickDraggedIC {nullptr};
 	GatePtr 						clickDraggedGate {nullptr};

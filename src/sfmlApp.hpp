@@ -23,7 +23,7 @@ public:
 	void setRedrawColor (const Color& c) { redrawColor = c; }
 
 	RenderWindow            window;
-	TimedEventManager		timedMgr {25000};
+	TimedEventManager		timedMgr;
 	State            		state;
 	Clock            		clock;
 	Time             		elapsed;

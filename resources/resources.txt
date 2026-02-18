@@ -14,7 +14,7 @@ xor.png		xor
 
 @fonts
 Monaco.ttf		debug
-Abadi.ttf		label
+"Abadi MT Condensed Extra Bold" 		label
 
 
 @sounds
