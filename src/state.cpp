@@ -15,6 +15,11 @@ void State::onCreate ()
 	float factor = scrh / (instrucsSpr.getTexture()->getSize().y + 40);
 	instrucsSpr.setScale(factor, factor);
 	instrucsSpr.setPosition(20, 20);
+	
+	circListSpr.setTexture(gTexture("otherCircs"));
+	circListSpr.setOrigin(circListSpr.gLB().width - 1, circListSpr.gLB().height / 2);
+	circListSpr.setScale(factor, factor);
+	circListSpr.setPosition(scrw, scrcy);
 
 	instrucsBtn.setTexture(gTexture("instrucsBtn"));
 	instrucsBtn.setScale(1.8, 1.2);
@@ -25,6 +30,11 @@ void State::onCreate ()
 	centerOrigin(instrBtnLabel);
 	instrBtnLabel.setPosition(instrucsBtn.gP() - vecF(0, 3));
 	instrBtnLabel.setFillColor(CAPPUCCINO);
+	
+	flowDelayTxt = Text("Flow delay: .02", gFont("instr"), 18);
+	centerOrigin(flowDelayTxt);
+	flowDelayTxt.setPosition(instrucsBtn.gP() + pVec(230, 181));
+	flowDelayTxt.setFillColor(DKAZURE);
 	
 	icButtons.clear();
 	int firstGroupCt = 7;
@@ -170,6 +180,8 @@ void State::onMouseDown (int x, int y)
 	wasntICToolClick:
 		if (curTool == "erase") {
 			handleErase(x, y);
+			lastEraseLoc = alignToGrid(x, y);
+			draggingEraser = true;
 		}
 		
 		// remove "select" here if adding actual selection
@@ -231,6 +243,7 @@ void State::onMouseUp (int x, int y)
 	clickDraggedGate = nullptr;
 	clickDraggedLabel = nullptr;
 	draggingICTool = false;
+	draggingEraser = false;
 	drawingRect = false;
 }
 
@@ -426,28 +439,36 @@ void State::update (const Time& time)
 	/* End panning */
 	
 	vecF alignedPos = alignToGrid(mouseVec.x, mouseVec.y);
-	if (indexOf(icToolTags, curTool) != -1)
+	bool toolCreatesSprite = indexOf(icToolTags, curTool) != -1;
+	if (toolCreatesSprite) {
 		cursorSpr.setPosition(alignedPos);
-	else cursorSpr.setPosition(mouseVec.x, mouseVec.y);
-	if (curTool != "select")
 		cursorShadow.setPosition(mouseVec.x, mouseVec.y);
+	}
+	else cursorSpr.setPosition(mouseVec.x, mouseVec.y);
 	
 	if (clickDraggedIC && (mouseVec.x != oldMouse.x || mouseVec.y != oldMouse.y))
 		setNodePosition(clickDraggedIC, mouseVec.x, mouseVec.y);
-	if (clickDraggedGate && (mouseVec.x != oldMouse.x || mouseVec.y != oldMouse.y))
+	else if (clickDraggedGate && (mouseVec.x != oldMouse.x || mouseVec.y != oldMouse.y))
 		clickDraggedGate->setPosition(mouseVec.x, mouseVec.y);
-	if (clickDraggedLabel && (mouseVec.x != oldMouse.x || mouseVec.y != oldMouse.y))
+	else if (clickDraggedLabel && (mouseVec.x != oldMouse.x || mouseVec.y != oldMouse.y))
 		clickDraggedLabel->setPosition({(float)mouseVec.x, (float)mouseVec.y});
 	
-	if (draggingICTool && curTool == "straight" && alignedPos != lastCreateLoc) {
+	else if (draggingICTool && curTool == "straight" && alignedPos != lastCreateLoc) {
 		icNodes.push_back(make_shared<ICStraightSeg>());
 		initializeNode(icNodes.back(), "straight", mouseVec.x, mouseVec.y);
 		lastCreateLoc = alignedPos;
 	}
 	
-	if (drawingRect && (mouseVec.x != oldMouse.x || mouseVec.y != oldMouse.y)) {
+	else if (draggingEraser && alignedPos != lastEraseLoc) {
+		handleErase(mouseVec.x, mouseVec.y);
+		lastEraseLoc = alignedPos;
+	}
+	
+	else if (drawingRect && (mouseVec.x != oldMouse.x || mouseVec.y != oldMouse.y)) {
 		rects.back().setSize(vecF(mouseVec.x, mouseVec.y) - rects.back().getPosition());
 	}
+	
+	flowDelayTxt.setString("Flow delay: " + fS(flowAnimDelay, 3));
 	
 	/* DEBUG / TESTING */
 	mouseTxt.setString(tS(mouseVec.x) + ", " + tS(mouseVec.y));
@@ -489,7 +510,6 @@ void State::update (const Time& time)
 		//			oss<<(long)activeTbox<<'\n'<<activeTbox->boxTxt.gP().x<<", "<<activeTbox->boxTxt.gP().y<<'\n'<<string(activeTbox->boxTxt.getString())<<'\n';
 		debugTxt.setString(oss.str());
 	}
-	
 } //end update
 
 void State::draw ()
@@ -500,8 +520,10 @@ void State::draw ()
 		simulateDraw();
 	rwin->draw(instrucsBtn);
 	rwin->draw(instrBtnLabel);
-	if (displayInstr)
+	if (displayInstr) {
 		rwin->draw(instrucsSpr);
+		rwin->draw(circListSpr);
+	}
 }
 
 void State::removeNodeFromGrid(ICNodePtr& node)
@@ -529,6 +551,7 @@ void State::debugTxtSetup ()
 void State::reset ()
 {
 	draggingICTool = false;
+	draggingEraser = false;
 	drawingRect = false;
 	displayInstr = false;
 	clickDraggedIC = nullptr;
@@ -761,9 +784,10 @@ void State::handleErase(int x, int y)
 			}, true);
 			ghosts.push_back(std::move(txt));
 			
-			label.setPosition({-1000, -1000});  // make sure erase fix works
+			if (activeTbox)
+				activeTbox->isActive = false;
 			activeTbox = nullptr;
-			itr = labels.erase(itr);
+			labels.erase(itr);
 			break;
 		}
 	}
@@ -952,7 +976,9 @@ void State::saveCircuit()
 void State::editDraw ()
 {
 	auto w = rwin;
-	if (curTool != "select")
+	if (curTool != "select"
+		&& curTool != "erase"
+		&& curTool != "move")
 		w->draw(cursorShadow);
 	w->draw(gridLinesVtcl);
 	w->draw(gridLinesHztl);
@@ -1002,6 +1028,7 @@ void State::simulateDraw ()
 		w->draw(*gate);
 	for (auto& label : labels)
 		w->draw(label);
+	w->draw(flowDelayTxt);
 	w->draw(filenameTbox);
 	if (showDbgTxt)
 		w->draw(debugTxt);

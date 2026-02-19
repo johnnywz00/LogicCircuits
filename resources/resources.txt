@@ -1,5 +1,6 @@
 @images
 instrucs.png	instrucs
+othercircs.png	otherCircs
 instrucsbtn.png	instrucsBtn
 gates.png	gateButtons
 ic.png		interconnects

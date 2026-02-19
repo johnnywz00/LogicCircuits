@@ -42,7 +42,6 @@ public:
 		nodeID = nextID++;
 		inputCt = inputct;
 		outputCt = outputct;
-//		input1->parent = weak_from_this();
 	}
 	
 	virtual ~InterconnectNode() = default;
@@ -166,8 +165,6 @@ public:
 		: InterconnectNode(2, 1)
 		, input2(make_shared<ICInput>())
 	{ }
-	
-	//is weakfromthis okay here
 	
 	void initInputs () override
 	{

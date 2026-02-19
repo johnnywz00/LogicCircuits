@@ -9,10 +9,8 @@
 	(don't call propagate/create event if next node status is already what needed?)
 
  TO DO:
- - show circuit options in-editor (.txt file of filenames stored on save()
  - sounds
  - drag-rectangle selection; batch move/erase
- - drag erase
  - gate rotation?
  - cursor for move tool?
  */
@@ -199,12 +197,14 @@ private:
 	vector<DrawablePtr>				ghosts;
 	Sprite							cursorSpr;
 	Sprite							instrucsSpr;
+	Sprite							circListSpr;
 	Sprite							instrucsBtn;
 	RectangleShape					cursorShadow;
 	RectangleShape					toolPane;
 	Textbox							filenameTbox;
 	Text    						mouseTxt
 									, instrBtnLabel
+									, flowDelayTxt
 									, debugTxt
 	;
 	VertexArray						gridLinesVtcl {Lines};
@@ -218,10 +218,12 @@ private:
 	string							curTool;
 	string							storedTool;
 	vecF							lastCreateLoc;
+	vecF							lastEraseLoc;
 	float							storedAnimDelay = flowAnimDelay;
 	bool 							isCursorVisible = true;
 	bool 							oldCursor = true;
 	bool							draggingICTool = false;
+	bool							draggingEraser = false;
 	bool							drawingRect = false;
 	bool							displayInstr = false;
 	bool							showDbgTxt = false;
