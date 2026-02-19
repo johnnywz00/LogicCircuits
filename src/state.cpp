@@ -453,9 +453,14 @@ void State::update (const Time& time)
 	mouseTxt.setString(tS(mouseVec.x) + ", " + tS(mouseVec.y));
 	{
 		ostringstream oss;
+		oss << " \n \n";
 		oss << "events size: " << timedMgr->events.size() << '\n';
 		oss << "eventtags size: " << timedMgr->pendingTags.size() << '\n';
-		oss << "anim delay: " << fS(flowAnimDelay, 4)<< '\n';
+		oss << "gridLocs size: " << gridLocs.size() << '\n';
+		oss << "icNodes size: " << icNodes.size() << '\n';
+		oss << "logicGates size: " << logicGates.size() << '\n';
+		if (mode == "simulate")
+			oss << "anim delay: " << fS(flowAnimDelay, 4)<< '\n';
 		for(auto& node : icNodes) {
 			if(node->spr.gGB().contains(mouseVec.x, mouseVec.y)) {
 				oss << node->name << '\n' << node->xformedStr << "\ngridPos: " << node->gridPos.vec.x << ", " << node->gridPos.vec.y << "\nID: " << node->nodeID << '\n' << "in1 status: " << node->input1->status << '\n';
@@ -694,47 +699,45 @@ void State::createLabel(bool activate)
 		labels.back().isActive = true;
 		activeTbox = &labels.back();
 	}
-	//FIX: currently a TextEntered event is sent after the "T" key press to create label, making a "t" appear in the new label string
 }
 
 void State::handleErase(int x, int y)
 {
 	for (auto itr = icNodes.begin(); itr != icNodes.end(); ++itr) {
-		if ((*itr)->spr.gGB().contains(x, y)) {
-			(*itr)->isActive = false;
-			
-			ghosts.emplace_back(makeSpriteGhost((*itr)->spr));
-			
-			setNodePosition(*itr, -1000, -1000); // make sure fix works
-			
-			//			removeNodeFromGrid(*itr);
-			//			auto term = dynamic_pointer_cast<CircuitTerminus>(*itr);
-			//			if (term) {
-			//				auto termItr = find(termini.begin(), termini.end(), term);
-			//				if (termItr != termini.end())
-			//					termini.erase(termItr);
-			//			}
-			//			itr = icNodes.erase(itr);
-			break;	// only erase one node at a time if they're layered
+		auto sp = *itr;
+		if (!sp)
+			continue;
+		if (sp->spr.gGB().contains(x, y)) {
+			sp->isActive = false;
+			ghosts.emplace_back(makeSpriteGhost(sp->spr));
+			removeNodeFromGrid(sp);
+			auto term = dynamic_pointer_cast<CircuitTerminus>(sp);
+			if (term) {
+				auto termItr = find(termini.begin(), termini.end(), term);
+				if (termItr != termini.end())
+					termini.erase(termItr);
+			}
+			icNodes.erase(itr);
+			/* Only erase one node at a time if they're layered */
+			break;
 		}
 	}
 	for (auto itr = logicGates.begin(); itr != logicGates.end(); ++itr) {
-		if ((*itr)->spr.gGB().contains(x, y)) {
-			(*itr)->isActive = false;
-			
-			/* Ghost */
-			ghosts.emplace_back(makeSpriteGhost((*itr)->spr));
-			
-			(*itr)->setPosition(-1000, -1000); //HACK bc pointer err w/ erase
-			
-			//DID I FORGET REMOVE NODE FROM GRID:  GATES NOT ERASING PROPERLY
-			//			for (auto itr2 = icNodes.begin(); itr2 != icNodes.end(); ) {
-			//				auto gateptr = dynamic_pointer_cast<GateICNode>(*itr2);
-			//				if (gateptr && gateptr->parent.lock() == *itr)
-			//					itr2 = icNodes.erase(itr2);
-			//				else ++itr2;
-			//			}
-			//			logicGates.erase(itr);
+		auto sp = *itr;
+		if (!sp)
+			continue;
+		if (sp->spr.gGB().contains(x, y)) {
+			sp->isActive = false;
+			ghosts.emplace_back(makeSpriteGhost(sp->spr));
+			for (auto itr2 = icNodes.begin(); itr2 != icNodes.end(); ) {
+				auto gateptr = dynamic_pointer_cast<GateICNode>(*itr2);
+				if (gateptr && gateptr->parent.lock() == *itr) {
+					removeNodeFromGrid(*itr2);
+					itr2 = icNodes.erase(itr2);
+				}
+				else ++itr2;
+			}
+			logicGates.erase(itr);
 			break;
 		}
 	}
