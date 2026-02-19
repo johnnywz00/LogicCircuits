@@ -31,10 +31,16 @@ void InterconnectNode::propagateOutput()
 		
 		/* Alert the next node in the chain to do the same */
 		auto state = State::getSelf();
-		if (state->animateFlow) {
+		/* Trying to use instant propagation instead of animation
+		 * was causing stack overflow for certain circuits like
+		 * S-R latch. Extra code could get around this, but for now
+		 * instead of turning off animation we set it to a very
+		 * low delay.
+		 */
+//		if (state->animateFlow)
+		{
 			ICNodeWkPtr wkNode = outp->parent;
 			state->timedMgr->addEventIf(tS(nodeID) + "op" + tS(j),
-//			state->timedMgr->addEvent(
 					State::flowAnimDelay,
 			[wkNode]() {
 				if (auto node = wkNode.lock()) {
@@ -42,10 +48,10 @@ void InterconnectNode::propagateOutput()
 				}
 			}, false);
 		}
-		else {
-			if (auto parentSp = outp->parent.lock())
-				parentSp->propagateOutput();
-		}
+//		else {
+//			if (auto parentSp = outp->parent.lock())
+//				parentSp->propagateOutput();
+//		}
 	}
 	
 	if (willOutput)

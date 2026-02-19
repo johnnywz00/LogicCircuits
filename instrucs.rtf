@@ -1,55 +1,95 @@
 {\rtf1\ansi\ansicpg1252\cocoartf2818
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 ProximaNova-Regular;\f1\fnil\fcharset0 Prisma;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\margl1440\margr1440\vieww14980\viewh17700\viewkind0
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 ProximaNova-Bold;\f1\fnil\fcharset0 ProximaNova-Regular;\f2\fnil\fcharset0 Prisma;
+}
+{\colortbl;\red255\green255\blue255;\red3\green45\blue153;}
+{\*\expandedcolortbl;;\cssrgb\c0\c25950\c66514;}
+\margl1440\margr1440\vieww13940\viewh18000\viewkind0
+\pard\tx236\tx242\tx412\tx565\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\fi116\pardirnatural\partightenfactor0
 
-\f0\fs36 \cf0 Shift + Esc  =  Quit\
-M  =  Toggles between edit mode and simulate mode\
+\f0\b\fs36 \cf2 \
+\pard\tqdec\tx236\tqr\tx242\tx412\tx565\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li127\fi-2\pardirnatural\partightenfactor0
+\cf2 Shift + Esc
+\f1\b0 \cf0   =  Quit\
+\pard\tx236\tx242\tx412\tx565\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\fi116\pardirnatural\partightenfactor0
+
+\f0\b \cf2 M
+\f1\b0 \cf0   =  Toggles between edit mode and simulate mode\
 \
 
-\f1 EDIT MODE
-\f0 \
-Esc  =  Cancels active tool and returns to plain cursor\
-A  =  Activates the elbow tool\
-D  =  Activates the opposite-facing elbow tool\
-S  =  Activates the straight-section tool\
-R  =  Rotate the current piece tool; holding Shift goes counterclockwise\
-F  =  Flips the current piece tool mirror-fashion; holding Shift uses the y-axis\
+\f2 							\cf2 EDIT MODE
+\f1 \cf0 \
+
+\f0\b \cf2 Esc
+\f1\b0 \cf0   =  Cancels active tool and returns to plain cursor\
+
+\f0\b \cf2 A
+\f1\b0 \cf0   =  Activates the elbow tool\
+
+\f0\b \cf2 D
+\f1\b0 \cf0   =  Activates the opposite-facing elbow tool\
+
+\f0\b \cf2 S
+\f1\b0 \cf0   =  Activates the straight-section tool\
+
+\f0\b \cf2 R
+\f1\b0 \cf0   =  Rotate the current piece tool; holding Shift goes counterclockwise\
+
+\f0\b \cf2 F
+\f1\b0 \cf0   =  Flips the current piece tool mirror-fashion; holding Shift uses the y-axis\
 	(Interconnects only; logic gates can't be rotated)\
-E (held down)  =  Stores the currently active tool and switches to erase-on-click\
+
+\f0\b \cf2 E (held down)
+\f1\b0 \cf0   =  Stores the currently active tool and switches to erase-on-click\
 	 mode; stored tool is restored on key release\
-W (held down)  =  Stores the currently active tool and switches to click-and-drag-\
+
+\f0\b \cf2 W (held down)
+\f1\b0 \cf0   =  Stores the currently active tool and switches to click-and-drag-\
 	to-move mode; stored tool is restored on key release\
-CLICK  =  Draws current gate or piece to the board; straight pieces may be \
+
+\f0\b \cf2 CLICK
+\f1\b0 \cf0   =  Draws current gate or piece to the board; straight pieces may be \
 	drawn multiply by holding the click and dragging\
-Shift + CLICK  =  Starts a new text label on the circuit board. Type the text,\
+
+\f0\b \cf2 Shift + CLICK
+\f1\b0 \cf0   =  Starts a new text label on the circuit board. Type the text,\
 	hit Enter, then the position of the text can be changed by mouse dragging\
 \
-Y  =  Resets the editor and clears the board\
-Tab  =  Highlights the textbox in the top-right corner for entering a filename;\
-		hit Enter or Esc to stop entering text\
-L  =  Attempts to load the circuit named in the textbox; not necessary to include\
-	the .txt extension\
-J  =  Saves the current configuration of the circuit board to a file called [text\
+
+\f0\b \cf2 Y 
+\f1\b0 \cf0  =  Resets the editor and clears the board\
+
+\f0\b \cf2 Tab
+\f1\b0 \cf0   =  Highlights the textbox in the top-right corner for entering a filename\
+	(clicking it also works); hit Enter or Esc to stop entering text\
+
+\f0\b \cf2 L
+\f1\b0 \cf0   =  Attempts to load the circuit named in the textbox from the folder\
+	resources/saved/; not necessary to include the .txt extension\
+
+\f0\b \cf2 J
+\f1\b0 \cf0   =  Saves the current configuration of the circuit board to a file called [text\
 	in the textbox].txt. File will be found in resources/saved/. NOTE! If you load\
 	a previously completed circuit, make changes or clear the board, and then \
 	hit J while the name of that previous circuit is still in the textbox, the old\
 	circuit will be overwritten with the new board, even an empty one\
 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 
-\f1 \cf0 SIMULATION MODE
-\f0 \
-O  =  Adjust the speed of the current flow animation; holding Shift decreases\
-U  =  Toggle off/on all animation so that current paths adjust instantly to input\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 CLICK on the inputs (that look like a square funneling down into a tube) to control\
+\f2 							\cf2 SIMULATION MODE
+\f1 \cf0 \
+
+\f0\b \cf2 O
+\f1\b0 \cf0   =  Adjust the speed of the current flow animation; holding Shift decreases\
+
+\f0\b \cf2 U
+\f1\b0 \cf0   =  Toggle off/on all animation so that current paths adjust instantly to input\
+
+\f0\b \cf2 CLICK 
+\f1\b0 \cf0 on the inputs (that look like a square funneling down into a tube) to control\
 	the simulation of current flow\
 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 							[Click to hide...]\
+											
+\f0\b \cf2 [Click to hide...]
+\f1\b0 \cf0 \
 \
 \
 \

@@ -1,5 +1,8 @@
 /*
+ Mac Notepad has Perplexity suggestions for additional circuits to try (need panning?)
  TO DO:
+ -srlatch and oscillator will cause stack overflow with cyclic calls of propagateOutput
+ if animflow turned off; would need extra mechanics to work around (track recursion or detect cyclical propagation), leaving animflow on for now
  - fix erase: logicGate*  (and ICInput*?) are going bad after erases/reloads
  -sounds
  - drag-rectangle selection; batch move/erase
@@ -208,6 +211,7 @@ private:
 	string							curTool;
 	string							storedTool;
 	vecF							lastCreateLoc;
+	float							storedAnimDelay = flowAnimDelay;
 	bool 							isCursorVisible = true;
 	bool 							oldCursor = true;
 	bool							draggingICTool = false;

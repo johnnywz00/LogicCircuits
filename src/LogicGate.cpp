@@ -145,27 +145,30 @@ void LogicGate::drawSupplyLines(RenderWindow* w)
 
 void LogicGate::propagateOutput()
 {
-//		if (++signalCt == 2) {
-//			signalCt = 0;
 		flowRects = updateRects();
 		if (auto nextNode = output1->output1.lock()) {
 			calcAndSetOutput(nextNode->status);
 			auto state = State::getSelf();
-			if (state->animateFlow) {
+			/* Trying to use instant propagation instead of animation
+			 * was causing stack overflow for certain circuits like
+			 * S-R latch. Extra code could get around this, but for now
+			 * instead of turning off animation we set it to a very
+			 * low delay.
+			 */
+//			if (state->animateFlow)
+			{
 				state->timedMgr->addEventIf("gate" + fS(spr.getPosition().x) + "," + fS(spr.getPosition().y),
-//				state->timedMgr->addEvent(
 										  State::flowAnimDelay, [wkNode = nextNode->parent](){
 					if (auto node = wkNode.lock()) {
 						node->propagateOutput();
 					}
 				});
 			}
-			else {
-				if (auto nextParent = (nextNode->parent).lock())
-					nextParent->propagateOutput();
-			}
+//			else {
+//				if (auto nextParent = (nextNode->parent).lock())
+//					nextParent->propagateOutput();
+//			}
 		}
-//		}
 }
 
 void GateInput::propagateOutput()

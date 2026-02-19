@@ -7,6 +7,7 @@ void State::onCreate ()
 {
 	instance_ = this;
 	timedMgr->setCapacity(25000);
+	rwin->setFramerateLimit(1000);
 	
 	debugTxtSetup();
 	
@@ -246,16 +247,19 @@ void State::onKeyPress(Keyboard::Key k)
 			}
 			break;
 			
+			/* Rotate the tool */
 		case Keyboard::R:
 			/* Logic gates can't be rotated */
 			if (gateNames.find(curTool) == string::npos)
 				cursorSpr.rotate(iKP(LShift) ? -90 : 90);
 			break;
 			
+			/* Flip the tool mirror-fashion */
 		case Keyboard::F:
 			cursorSpr.scale(iKP(LShift) ? 1 : -1, iKP(LShift) ? -1 : 1);
 			break;
 			
+			/* Eraser */
 		case Keyboard::E:
 			if (curTool == "erase")
 				break;
@@ -265,6 +269,7 @@ void State::onKeyPress(Keyboard::Key k)
 			showCursor(true);
 			break;
 			
+			/* Move pieces */
 		case Keyboard::W:
 			if (curTool == "move")
 				break;
@@ -286,27 +291,39 @@ void State::onKeyPress(Keyboard::Key k)
 			changeViewSize();
 			break;
 			
+			/* Straight section tool */
 		case Keyboard::S:
 			setTool(*valWhich(icButtons,
 							  [&](auto& btn){ return btn.tag == "straight"; }));
 			break;
 			
+			/* Elbow tool */
 		case Keyboard::A:
 			setTool(*valWhich(icButtons,
 							  [&](auto& btn){ return btn.tag == "elbow"; }));
 			break;
 			
+			/* Opposite elbow tool */
 		case Keyboard::D:
 			setTool(*valWhich(icButtons,
 							  [&](auto& btn){ return btn.tag == "lelbow"; }));
 			break;
 			
+			/* Switch modes */
 		case Keyboard::M:
 			toggleMode();
 			break;
 			
+			/* Turn on/off current flow animation */
 		case Keyboard::U:
 			animateFlow = !animateFlow;
+			if (!animateFlow) {
+				storedAnimDelay = flowAnimDelay;
+				flowAnimDelay = .001;
+			}
+			else {
+				flowAnimDelay = storedAnimDelay;
+			}
 			break;
 			
 		case Keyboard::Y:
@@ -317,19 +334,23 @@ void State::onKeyPress(Keyboard::Key k)
 			curTool = "makeRect";
 			break;
 			
+			/* Save to file */
 		case Keyboard::J:
 			saveCircuit();
 			break;
 			
+			/* Load from file */
 		case Keyboard::L:
 			loadCircuit();
 			break;
 			
+			/* Activate the filename textbox */
 		case Keyboard::Tab:
 			filenameTbox.setActive(true); // cycle through all instead
 			activeTbox = &filenameTbox;
 			break;
 
+			/* Toggle debug stats */
 		case Keyboard::Slash:
 			if (isShiftPressed())
 				showDbgTxt = !showDbgTxt;
@@ -361,7 +382,7 @@ void State::update (const Time& time)
 {
 	timedMgr->fireReadyEvents(time);
 	
-	adjustVal(O, flowAnimDelay, .002, .0001, .7);
+	adjustVal(O, flowAnimDelay, .003, .001, .7);
 	
 	/* Panning */
 	View vw = rwin->getView();
