@@ -10,6 +10,7 @@ not.png		not
 nand.png	nand
 nor.png		nor
 xor.png		xor
+eraser.png	eraser
 
 #repeated
 #ground.png		ground		repeat

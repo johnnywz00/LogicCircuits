@@ -1,13 +1,20 @@
 /*
  Mac Notepad has Perplexity suggestions for additional circuits to try (need panning?)
+ 
+ !
+ * srlatch and oscillator will cause stack overflow with cyclic calls of
+	propagateOutput if animflow turned off; would need extra mechanics to work around
+	(track recursion or detect cyclical propagation), leaving animflow on for now
+ * srlatch eventct slowly creeps upward when clicking on the inputs.
+	(don't call propagate/create event if next node status is already what needed?)
+
  TO DO:
- -srlatch and oscillator will cause stack overflow with cyclic calls of propagateOutput
- if animflow turned off; would need extra mechanics to work around (track recursion or detect cyclical propagation), leaving animflow on for now
- - fix erase: logicGate*  (and ICInput*?) are going bad after erases/reloads
- -sounds
+ - show circuit options in-editor (.txt file of filenames stored on save()
+ - sounds
  - drag-rectangle selection; batch move/erase
- -drag erase
+ - drag erase
  - gate rotation?
+ - cursor for move tool?
  */
 
 

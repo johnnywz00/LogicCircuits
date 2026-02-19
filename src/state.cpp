@@ -266,7 +266,11 @@ void State::onKeyPress(Keyboard::Key k)
 			storedTool = curTool;
 			oldCursor = isCursorVisible;
 			curTool = "erase";
-			showCursor(true);
+			showCursor(false);
+			cursorSpr.setTexture(gTexture("eraser"));
+			cursorSpr.setTextureRect(IntRect(0, 0, cursorSpr.getTexture()->getSize().x, cursorSpr.getTexture()->getSize().y));
+			centerOrigin(cursorSpr);
+			cursorSpr.setScale({1, 1});
 			break;
 			
 			/* Move pieces */
@@ -368,8 +372,10 @@ void State::onKeyRelease(Keyboard::Key k)
 		case Keyboard::W:
 			// reverting back from move tool: fall through unless new functionality added
 		case Keyboard::E:
-			curTool = storedTool;
-			storedTool = "select"; //unnec?
+			if (indexOf(icToolTags, storedTool) != -1)
+				setTool(*valWhich(icButtons,
+								  [&](auto& btn){ return btn.tag == storedTool; }));
+			else setTool(storedTool);
 			showCursor(oldCursor);
 			break;
 			
@@ -420,7 +426,9 @@ void State::update (const Time& time)
 	/* End panning */
 	
 	vecF alignedPos = alignToGrid(mouseVec.x, mouseVec.y);
-	cursorSpr.setPosition(alignedPos); // fix: only if ictool
+	if (indexOf(icToolTags, curTool) != -1)
+		cursorSpr.setPosition(alignedPos);
+	else cursorSpr.setPosition(mouseVec.x, mouseVec.y);
 	if (curTool != "select")
 		cursorShadow.setPosition(mouseVec.x, mouseVec.y);
 	
@@ -441,7 +449,7 @@ void State::update (const Time& time)
 		rects.back().setSize(vecF(mouseVec.x, mouseVec.y) - rects.back().getPosition());
 	}
 	
-	// DEBUG/TESTING
+	/* DEBUG / TESTING */
 	mouseTxt.setString(tS(mouseVec.x) + ", " + tS(mouseVec.y));
 	{
 		ostringstream oss;
@@ -963,7 +971,8 @@ void State::editDraw ()
 	
 	for (auto& icb : icButtons)
 		w->draw(icb.spr);
-	if (indexOf(icToolTags, curTool) != -1)
+	if (indexOf(icToolTags, curTool) != -1
+		|| curTool == "erase")
 		w->draw(cursorSpr);
 	w->draw(filenameTbox);
 	if (showDbgTxt) {
