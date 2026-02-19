@@ -14,6 +14,7 @@
 class InterconnectNode;
 class ICInput;
 using ICNodePtr = shared_ptr<InterconnectNode>;
+using ICNodeWkPtr = weak_ptr<InterconnectNode>;
 using ICInputPtr = shared_ptr<ICInput>;
 using ICInputWkPtr = weak_ptr<ICInput>;
 
@@ -22,7 +23,7 @@ class ICInput
 {
 public:
 	int status = -1;
-	weak_ptr<InterconnectNode> parent;
+	ICNodeWkPtr parent;
 };
 
 
@@ -31,7 +32,8 @@ class InterconnectNode 	: public Drawable
 						, public enable_shared_from_this<InterconnectNode>
 {
 public:
-	static inline const Color 	circOffColor {250, 255, 240}; //{193, 183, 165};
+	static inline const Color 	circOffColor {250, 255, 240};
+//	static inline const Color 	circOffColor {193, 183, 165};
 	static inline const Color 	circOnColor {63, 149, 228};
 
 	InterconnectNode(int inputct = 1, int outputct = 1)
@@ -165,7 +167,6 @@ public:
 		, input2(make_shared<ICInput>())
 	{ }
 	
-	//IS MAKESHARED OKAY IN CONSTRUCTOR;
 	//is weakfromthis okay here
 	
 	void initInputs () override

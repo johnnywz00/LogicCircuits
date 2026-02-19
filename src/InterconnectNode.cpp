@@ -9,9 +9,6 @@
 #include "state.hpp"
 
 
-//Color InterconnectNode::circOffColor {250, 255, 240}; //{193, 183, 165};
-//Color InterconnectNode::circOnColor {63, 149, 228};
-
 void InterconnectNode::propagateOutput()
 {
 	/* Determine if this node will output a 1 signal */
@@ -19,7 +16,8 @@ void InterconnectNode::propagateOutput()
 	for (int i = 0; i < inputCt; ++i) {
 		auto inp = getInput(i);
 		if (inp->status == -1)
-			return;
+//			return
+			;
 		if (inp->status == 1)
 			willOutput = true;
 	}
@@ -34,14 +32,15 @@ void InterconnectNode::propagateOutput()
 		/* Alert the next node in the chain to do the same */
 		auto state = State::getSelf();
 		if (state->animateFlow) {
-			weak_ptr<InterconnectNode> wkNode = outp->parent;
-			//		State::getSelf()->timedMgr->addEventIf(tS(nodeID) + "op" + tS(j), .03,
-			state->timedMgr->addEvent(.02, //.03
-									 [wkNode]() {
+			ICNodeWkPtr wkNode = outp->parent;
+			state->timedMgr->addEventIf(tS(nodeID) + "op" + tS(j),
+//			state->timedMgr->addEvent(
+					State::flowAnimDelay,
+			[wkNode]() {
 				if (auto node = wkNode.lock()) {
 					node->propagateOutput();
 				}
-			});
+			}, false);
 		}
 		else {
 			if (auto parentSp = outp->parent.lock())

@@ -1,3 +1,13 @@
+/*
+ TO DO:
+ - fix erase: logicGate*  (and ICInput*?) are going bad after erases/reloads
+ -sounds
+ - drag-rectangle selection; batch move/erase
+ -drag erase
+ - gate rotation?
+ */
+
+
 #ifndef LOGIC_CIRCUITS_H
 #define LOGIC_CIRCUITS_H
 
@@ -54,6 +64,7 @@ public:
 	
 	void removeNodeFromGrid (ICNodePtr& node);
 
+	static inline float				flowAnimDelay = .02;
 	
 	RenderWindow*  		 			rwin;
 	FullscreenOnlyApp* 				app;
@@ -90,6 +101,8 @@ private:
 		{0, 0, 20, 20},
 		{20, 0, 20, 20}
 	};
+	const string gateNames = "notnandnorxor";
+
 	
 
 	int cellSize () { return baseCellSize * gridScale.x; }
@@ -147,7 +160,7 @@ private:
 	
 	void handleErase (int x, int y);
 	
-	shared_ptr<Sprite> makeSpriteGhost (Sprite& src);
+	SpritePtr makeSpriteGhost (Sprite& src);
 	
 	void propagateAll ();
 		
@@ -156,6 +169,10 @@ private:
 	bool loadCircuit ();
 	
 	void saveCircuit ();
+	
+	void editDraw ();
+	
+	void simulateDraw ();
 	
 
 	static inline State* 			instance_ = nullptr;
@@ -169,21 +186,24 @@ private:
 	vector<ICNodeButton> 			icButtons;
 	vector<Textbox> 				labels;
 	vector<RectangleShape> 			rects;
-	vector<shared_ptr<Drawable>>	ghosts;
-	Sprite							cursorSprite;
+	vector<DrawablePtr>				ghosts;
+	Sprite							cursorSpr;
+	Sprite							instrucsSpr;
+	Sprite							instrucsBtn;
 	RectangleShape					cursorShadow;
 	RectangleShape					toolPane;
 	Textbox							filenameTbox;
 	Text    						mouseTxt
+									, instrBtnLabel
 									, debugTxt
 	;
 	VertexArray						gridLinesVtcl {Lines};
 	VertexArray						gridLinesHztl {Lines};
 
-	ICNodePtr 						clickDraggedIC {nullptr};
-	GatePtr 						clickDraggedGate {nullptr};
-	Textbox*						clickDraggedLabel {nullptr};
-	Textbox*						activeTbox {nullptr};
+	ICNodePtr 						clickDraggedIC = nullptr;
+	GatePtr 						clickDraggedGate = nullptr;
+	Textbox*						clickDraggedLabel = nullptr;
+	Textbox*						activeTbox = nullptr;
 
 	string							curTool;
 	string							storedTool;
@@ -192,7 +212,8 @@ private:
 	bool 							oldCursor = true;
 	bool							draggingICTool = false;
 	bool							drawingRect = false;
-	bool							useDirArrows = true;
+	bool							displayInstr = false;
+	bool							showDbgTxt = false;
 }; //end class State
 
 #endif

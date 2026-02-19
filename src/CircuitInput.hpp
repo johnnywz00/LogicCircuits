@@ -47,7 +47,6 @@ class CircuitInput : public CircuitTerminus
 public:
 	string getInputLocs() override { return "0"; }
 	string getOutputLocs() override { return string({xformedStr[2]}); }
-	
 };
 
 

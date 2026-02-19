@@ -14,12 +14,13 @@
 
 class LogicGate;
 using GatePtr = shared_ptr<LogicGate>;
+using GateWkPtr = weak_ptr<LogicGate>;
 
 
 class GateICNode : public InterconnectNode
 {
 public:
-	weak_ptr<LogicGate>		parent;
+	GateWkPtr		parent;
 };
 
 
@@ -48,25 +49,29 @@ public:
 class LogicGate : public Drawable
 {
 public:
-	virtual ~LogicGate() = default;
+	virtual ~LogicGate () = default;
 	
-	void draw(RenderTarget&, RenderStates) const override;
+	void draw (RenderTarget&, RenderStates) const override;
 	
-	virtual vector<RectangleShape> updateRects() = 0;
+	/* The "rects" here are simply small blue blips drawn
+	 * to represent where current is flowing within bounds
+	 * of the gate sprite
+	 */
+	virtual vector<RectangleShape> updateRects () = 0;
 	
-	virtual void propagateOutput();
+	virtual pair<vecF, vecF> gridOffsets () = 0;
 	
-	virtual void calcAndSetOutput(int& outStatus) { }
+	virtual void propagateOutput ();
 	
-	virtual void initialize(GatePtr&, const string&, int x, int y, const Sprite&);
+	virtual void calcAndSetOutput (int& outStatus) { }
 	
-	virtual void setPosition(float x, float y);
+	virtual void initialize (GatePtr&, const string&, int x, int y, const Sprite&);
 	
-	void initializeGateNode(ICNodePtr&, GatePtr&);
+	virtual void setPosition (float x, float y);
 	
-	void drawSupplyLines(RenderWindow*);
+	void initializeGateNode (ICNodePtr&, GatePtr&);
 	
-	virtual pair<vecF, vecF> gridOffsets() = 0;
+	void drawSupplyLines (RenderWindow*);
 	
 	Sprite spr; // transistors and tracks
 	Sprite gateShape;
@@ -78,21 +83,33 @@ public:
 	string name;
 	bool isActive = true;
 	vecF supplyOffset;
-	static map<string, vecF> soMap;
 	
 protected:
-	int signalCt = 0;
+	/* Pixel offsets for where to start drawing
+	 * the supply lines that feed the gate
+	 */
+	static inline map<string, vecF> soMap = {
+		{"not", {11, 52}},
+		{"and", {27, 58}},
+		{"nand", {15, 52}},
+		{"or", {16, 45}},
+		{"nor", {19, 45}},
+		{"xor", {46, 64}}
+	};
+	
 	bool A() const { return inputA->input1->status == 1; }
 	bool B() const { return inputB->input1->status == 1; }
 	
-	vector<RectangleShape> dataToRectShapes(intvec data);
+	vector<RectangleShape> dataToRectShapes (intvec data);
 	
-	vector<RectangleShape>& addRectsToVec(vector<RectangleShape>& vec, intvec data)
+	vecF cornerToOgnCoords (vecF fromCorner) const;
+	
+	vector<RectangleShape>& addRectsToVec (vector<RectangleShape>& vec, intvec data)
 	{
 		return vecPlusEqVec(vec, dataToRectShapes(data));
 	}
 	
-	vecF cornerToOgnCoords(vecF fromCorner) const;
+	int signalCt = 0;
 };
 
 
@@ -100,9 +117,9 @@ protected:
 class NotGate : public LogicGate
 {
 public:
-	void draw(RenderTarget&, RenderStates) const override;
+	void draw (RenderTarget&, RenderStates) const override;
 	
-	vector<RectangleShape> updateRects() override
+	vector<RectangleShape> updateRects () override
 	{
 		vector<RectangleShape> ret;
 		if (A())
@@ -112,16 +129,17 @@ public:
 		return ret;
 	}
 	
-	void propagateOutput() override
+	void propagateOutput () override
 	{
 		flowRects = updateRects();
 		if (auto nextNode = output1->output1.lock()) {
 			nextNode->status = !A() ? 1 : 0;
-			(nextNode->parent).lock()->propagateOutput(); //FIX: if lock? lambda?
+			if (auto nextParent = (nextNode->parent).lock())
+				nextParent->propagateOutput();
 		}
 	}
 	
-	pair<vecF, vecF> gridOffsets() override { return {{-1, 0}, {-999999, -999999}}; }
+	pair<vecF, vecF> gridOffsets () override { return {{-1, 0}, {-999999, -999999}}; }
 };
 
 
@@ -129,7 +147,7 @@ public:
 class AndGate : public LogicGate
 {
 public:
-	vector<RectangleShape> updateRects() override
+	vector<RectangleShape> updateRects () override
 	{
 		vector<RectangleShape> ret;
 		if (A())
@@ -148,12 +166,12 @@ public:
 		return ret;
 	}
 	
-	void calcAndSetOutput(int& outStatus) override
+	void calcAndSetOutput (int& outStatus) override
 	{
 		outStatus = A() && B() ? 1 : 0;
 	}
 	
-	pair<vecF, vecF> gridOffsets() override { return {{-2, -1}, {-2, 1}}; }
+	pair<vecF, vecF> gridOffsets () override { return {{-2, -1}, {-2, 1}}; }
 };
 
 
@@ -161,7 +179,7 @@ public:
 class OrGate : public LogicGate
 {
 public:
-	vector<RectangleShape> updateRects() override
+	vector<RectangleShape> updateRects () override
 	{
 		vector<RectangleShape> ret;
 		if (A())
@@ -176,7 +194,7 @@ public:
 		return ret;
 	}
 	
-	void calcAndSetOutput(int& outStatus) override
+	void calcAndSetOutput (int& outStatus) override
 	{
 		outStatus = A() || B() ? 1 : 0;
 	}
@@ -189,7 +207,7 @@ public:
 class XorGate : public LogicGate
 {
 public:
-	vector<RectangleShape> updateRects() override
+	vector<RectangleShape> updateRects () override
 	{
 		vector<RectangleShape> ret;
 		if (A())
@@ -211,12 +229,12 @@ public:
 		return ret;
 	}
 	
-	void calcAndSetOutput(int& outStatus) override
+	void calcAndSetOutput (int& outStatus) override
 	{
 		outStatus = A() != B() ? 1 : 0;
 	}
 	
-	pair<vecF, vecF> gridOffsets() override { return {{-5, -1}, {-5, 1}}; }
+	pair<vecF, vecF> gridOffsets () override { return {{-5, -1}, {-5, 1}}; }
 };
 
 
@@ -224,7 +242,7 @@ public:
 class NAndGate : public LogicGate
 {
 public:
-	vector<RectangleShape> updateRects() override
+	vector<RectangleShape> updateRects () override
 	{
 		vector<RectangleShape> ret;
 		if (A())
@@ -239,12 +257,12 @@ public:
 		return ret;
 	}
 	
-	void calcAndSetOutput(int& outStatus) override
+	void calcAndSetOutput (int& outStatus) override
 	{
 		outStatus = !(A() && B()) ? 1 : 0;
 	}
 	
-	pair<vecF, vecF> gridOffsets() override { return {{-3, -1}, {-3, 0}}; }
+	pair<vecF, vecF> gridOffsets () override { return {{-3, -1}, {-3, 0}}; }
 };
 
 
@@ -252,7 +270,7 @@ public:
 class NOrGate : public LogicGate
 {
 public:
-	vector<RectangleShape> updateRects() override
+	vector<RectangleShape> updateRects () override
 	{
 		vector<RectangleShape> ret;
 		if (A())
@@ -267,23 +285,12 @@ public:
 		return ret;
 	}
 	
-	void calcAndSetOutput(int& outStatus) override
+	void calcAndSetOutput (int& outStatus) override
 	{
 		outStatus = !(A() || B()) ? 1 : 0;
 	}
 	
-	pair<vecF, vecF> gridOffsets() override { return {{-3, 0}, {-3, 1}}; }
+	pair<vecF, vecF> gridOffsets () override { return {{-3, 0}, {-3, 1}}; }
 };
 
-
-
-/*
- -still issues with branching tracks: not propagating
- - fix erase: logicGate*  (and ICInput*?) are going bad after erases/reloads
-- feedback inputs:  set/reset latch; not-gate oscillator
- -sounds
- - drag-rectangle selection; batch move/erase
- -drag erase
-- gate rotation?
-*/
 #endif /* LogicGate_hpp */

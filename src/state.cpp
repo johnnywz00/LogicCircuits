@@ -9,7 +9,22 @@ void State::onCreate ()
 	timedMgr->setCapacity(25000);
 	
 	debugTxtSetup();
+	
+	instrucsSpr.setTexture(gTexture("instrucs"));
+	float factor = scrh / (instrucsSpr.getTexture()->getSize().y + 40);
+	instrucsSpr.setScale(factor, factor);
+	instrucsSpr.setPosition(20, 20);
 
+	instrucsBtn.setTexture(gTexture("instrucsBtn"));
+	instrucsBtn.setScale(1.8, 1.2);
+	centerOrigin(instrucsBtn);
+	instrucsBtn.setPosition(scrw - 400, 35);
+	
+	instrBtnLabel = Text("Instructions", gFont("instr"), 14);
+	centerOrigin(instrBtnLabel);
+	instrBtnLabel.setPosition(instrucsBtn.gP() - vecF(0, 3));
+	instrBtnLabel.setFillColor(CAPPUCCINO);
+	
 	icButtons.clear();
 	int firstGroupCt = 7;
 	for (int i = 0; i < firstGroupCt; ++i) {
@@ -66,7 +81,11 @@ bool State::handleTextEvent (Event& event)
 void State::onMouseDown (int x, int y)
 {
 	/* Either mode */
-	if (filenameTbox.tbox.gGB().contains(x, y)) {
+	if (displayInstr) {
+		displayInstr = false;
+		return;
+	}
+	else if (filenameTbox.tbox.gGB().contains(x, y)) {
 		filenameTbox.setActive(true);
 		activeTbox = &filenameTbox;
 		return;
@@ -74,6 +93,10 @@ void State::onMouseDown (int x, int y)
 	else if (filenameTbox.isActive) {
 		filenameTbox.setActive(false);
 		activeTbox = nullptr;
+		return;
+	}
+	else if (instrucsBtn.gGB().contains(x, y)) {
+		displayInstr = true;
 		return;
 	}
 	
@@ -102,7 +125,6 @@ void State::onMouseDown (int x, int y)
 		}
 	}
 	if (!clickedTool) {
-		string s = "notnandnorxor";
 		/* Adding Interconnect pieces to the tableau */
 		if (curTool == "elbow")
 			icNodes.push_back(make_shared<ICElbow>());
@@ -140,8 +162,8 @@ void State::onMouseDown (int x, int y)
 			logicGates.push_back(make_shared<XorGate>());
 		else goto wasntICToolClick;
 		
-		if (s.find(curTool) != s.npos)
-			logicGates.back()->initialize(logicGates.back(), curTool, x, y, cursorSprite);
+		if (gateNames.find(curTool) != string::npos)
+			logicGates.back()->initialize(logicGates.back(), curTool, x, y, cursorSpr);
 		else initializeNode(icNodes.back(), curTool, x, y);
 		
 	wasntICToolClick:
@@ -225,11 +247,13 @@ void State::onKeyPress(Keyboard::Key k)
 			break;
 			
 		case Keyboard::R:
-			cursorSprite.rotate(iKP(LShift) ? -90 : 90);
+			/* Logic gates can't be rotated */
+			if (gateNames.find(curTool) == string::npos)
+				cursorSpr.rotate(iKP(LShift) ? -90 : 90);
 			break;
 			
 		case Keyboard::F:
-			cursorSprite.scale(iKP(LShift) ? 1 : -1, iKP(LShift) ? -1 : 1);
+			cursorSpr.scale(iKP(LShift) ? 1 : -1, iKP(LShift) ? -1 : 1);
 			break;
 			
 		case Keyboard::E:
@@ -277,7 +301,7 @@ void State::onKeyPress(Keyboard::Key k)
 							  [&](auto& btn){ return btn.tag == "lelbow"; }));
 			break;
 			
-		case Keyboard::P:
+		case Keyboard::M:
 			toggleMode();
 			break;
 			
@@ -305,11 +329,11 @@ void State::onKeyPress(Keyboard::Key k)
 			filenameTbox.setActive(true); // cycle through all instead
 			activeTbox = &filenameTbox;
 			break;
-			
-			//		case Keyboard::T:
-			//			if (mode == "edit")
-			//				createLabel();
-			//			break;
+
+		case Keyboard::Slash:
+			if (isShiftPressed())
+				showDbgTxt = !showDbgTxt;
+			break;
 			
 		default:
 			break;
@@ -336,6 +360,8 @@ void State::onKeyRelease(Keyboard::Key k)
 void State::update (const Time& time)
 {
 	timedMgr->fireReadyEvents(time);
+	
+	adjustVal(O, flowAnimDelay, .002, .0001, .7);
 	
 	/* Panning */
 	View vw = rwin->getView();
@@ -364,7 +390,7 @@ void State::update (const Time& time)
 	if (changedView) {
 		auto dif = vw.getCenter() - oldPos;
 		toolPane.move(dif);
-		cursorSprite.move(dif);
+		cursorSpr.move(dif);
 		for (auto& icb : icButtons)
 			icb.spr.move(dif);
 		redrawGrid();
@@ -373,7 +399,7 @@ void State::update (const Time& time)
 	/* End panning */
 	
 	vecF alignedPos = alignToGrid(mouseVec.x, mouseVec.y);
-	cursorSprite.setPosition(alignedPos); // fix: only if ictool
+	cursorSpr.setPosition(alignedPos); // fix: only if ictool
 	if (curTool != "select")
 		cursorShadow.setPosition(mouseVec.x, mouseVec.y);
 	
@@ -398,9 +424,9 @@ void State::update (const Time& time)
 	mouseTxt.setString(tS(mouseVec.x) + ", " + tS(mouseVec.y));
 	{
 		ostringstream oss;
-		oss<<"events size: "<<timedMgr->events.size()<<'\n';
-		oss<<"eventtags size: "<<timedMgr->pendingTags.size()<<'\n';
-		oss<<"ghosts size: "<<ghosts.size()<<'\n';
+		oss << "events size: " << timedMgr->events.size() << '\n';
+		oss << "eventtags size: " << timedMgr->pendingTags.size() << '\n';
+		oss << "anim delay: " << fS(flowAnimDelay, 4)<< '\n';
 		for(auto& node : icNodes) {
 			if(node->spr.gGB().contains(mouseVec.x, mouseVec.y)) {
 				oss << node->name << '\n' << node->xformedStr << "\ngridPos: " << node->gridPos.vec.x << ", " << node->gridPos.vec.y << "\nID: " << node->nodeID << '\n' << "in1 status: " << node->input1->status << '\n';
@@ -434,36 +460,14 @@ void State::update (const Time& time)
 
 void State::draw ()
 {
-	auto w = rwin;
-	if (curTool != "select")
-		w->draw(cursorShadow);
-	w->draw(gridLinesVtcl);
-	w->draw(gridLinesHztl);
-	for (auto& gate : logicGates) {
-		if (gate->isActive)
-			gate->drawSupplyLines(w);
-	}
-	for (auto& rect : rects)
-		w->draw(rect);
-	w->draw(toolPane);
-	for (auto& ghost : ghosts)
-		w->draw(*ghost);
-	for (auto& node : icNodes)
-		if (node->isActive
-			&& node->name != "gateinput" && node->name != "gateoutput"  //////
-			)
-			w->draw(*node);
-	for (auto& gate : logicGates)
-		w->draw(*gate);
-	for (auto& label : labels)
-		w->draw(label);
-	for (auto& icb : icButtons)
-		w->draw(icb.spr);
-	if (mode == "edit" && curTool != "select" && curTool != "erase" && curTool != "move" && curTool != "makeRect") // // streamline
-		w->draw(cursorSprite);
-	w->draw(filenameTbox);
-	w->draw(mouseTxt);
-	w->draw(debugTxt);
+	if (mode == "edit")
+		editDraw();
+	else if (mode == "simulate")
+		simulateDraw();
+	rwin->draw(instrucsBtn);
+	rwin->draw(instrBtnLabel);
+	if (displayInstr)
+		rwin->draw(instrucsSpr);
 }
 
 void State::removeNodeFromGrid(ICNodePtr& node)
@@ -490,6 +494,13 @@ void State::debugTxtSetup ()
 
 void State::reset ()
 {
+	draggingICTool = false;
+	drawingRect = false;
+	displayInstr = false;
+	clickDraggedIC = nullptr;
+	clickDraggedGate = nullptr;
+	clickDraggedLabel = nullptr;
+	activeTbox = nullptr;
 	InterconnectNode::resetNextID();
 	icNodes.clear();
 	termini.clear();
@@ -502,13 +513,14 @@ void State::reset ()
 	curTool = "select";
 	storedTool = "select";
 	gridScale = {2, 2};
-	redrawGrid();
-	cursorSprite.setScale(gridScale);
+	cursorSpr.setScale(gridScale);
 	cursorShadow.setSize({baseCellSize * gridScale.x, baseCellSize * gridScale.x});
 	centerOrigin(cursorShadow);
 	activeTbox = nullptr;
 	showCursor(true);
 	timedMgr->reset();
+	rwin->setView(rwin->getDefaultView());
+	redrawGrid();
 }
 
 void State::toggleMode()
@@ -517,30 +529,16 @@ void State::toggleMode()
 		mode = "simulate";
 		for (auto& label : labels)
 			label.setActive(false);
-		if (!useDirArrows) {
-			for (auto& node : icNodes) {
-				if (!isOfKind<CircuitTerminus>(node)) {
-					auto tr = node->spr.getTextureRect();
-					tr.top -= 14;
-					node->spr.setTextureRect(tr);
-				}
-			}
-		}
 		linkICNodes();
 		propagateAll();
 		showCursor(true);
 	}
+	
 	else if (mode == "simulate") {
 		mode = "edit";
+		timedMgr->reset();
 		for (auto& node : icNodes) {
 			node->spr.setColor(Color::White);
-			if (!useDirArrows) {
-				if (!isOfKind<CircuitTerminus>(node)) {
-					auto tr = node->spr.getTextureRect();
-					tr.top += 14;
-					node->spr.setTextureRect(tr);
-				}
-			}
 		}
 	}
 }
@@ -574,17 +572,17 @@ void State::setTool(ICNodeButton& icb)
 {
 	curTool = icb.tag;
 	if (icb.isGate) {
-		cursorSprite.setTexture(gTexture(icb.tag));
-		auto sz = cursorSprite.getTexture()->getSize();
-		cursorSprite.setTextureRect(IntRect(0, 0, sz.x, sz.y));
+		cursorSpr.setTexture(gTexture(icb.tag));
+		auto sz = cursorSpr.getTexture()->getSize();
+		cursorSpr.setTextureRect(IntRect(0, 0, sz.x, sz.y));
 	}
 	else {
-		cursorSprite.setTexture(*(icb.spr.getTexture()));
-		cursorSprite.setTextureRect(icb.spr.getTextureRect());
+		cursorSpr.setTexture(*(icb.spr.getTexture()));
+		cursorSpr.setTextureRect(icb.spr.getTextureRect());
 	}
-	cursorSprite.setScale(gridScale);
-	cursorSprite.setOrigin(icb.cursorOgn);
-	cursorSprite.setRotation(0);
+	cursorSpr.setScale(gridScale);
+	cursorSpr.setOrigin(icb.cursorOgn);
+	cursorSpr.setRotation(0);
 	showCursor(false);
 }
 
@@ -603,9 +601,9 @@ void State::initializeNode(ICNodePtr& node, string name, int x, int y)
 	Sprite* spr = &node->spr;
 	spr->setTexture(gTexture(node->txMapKey));
 	spr->setTextureRect(icToolTxRects[indexOf(icToolTags, curTool)]);
-	spr->setOrigin(cursorSprite.getOrigin());
-	spr->setRotation(cursorSprite.getRotation());
-	spr->setScale(cursorSprite.getScale());
+	spr->setOrigin(cursorSpr.getOrigin());
+	spr->setRotation(cursorSpr.getRotation());
+	spr->setScale(cursorSpr.getScale());
 	node->setXformedString();
 	setNodePosition(node, x, y);
 	node->initInputs();
@@ -716,7 +714,7 @@ void State::handleErase(int x, int y)
 		if (label.boxTxt.getGlobalBounds().contains(x, y)) {
 			label.isActive = false;
 			
-			shared_ptr<Text> txt = make_shared<Text>(label.boxTxt);
+			TextPtr txt = make_shared<Text>(label.boxTxt);
 			txt->setOutlineColor(Color::Transparent);
 			timedMgr->addEvent(.016, [txt, this](FusePtr fuse) {
 				Color c = txt->getFillColor();
@@ -739,9 +737,9 @@ void State::handleErase(int x, int y)
 	}
 }
 
-shared_ptr<Sprite> State::makeSpriteGhost(Sprite& src)
+SpritePtr State::makeSpriteGhost(Sprite& src)
 {
-	shared_ptr<Sprite> s = make_shared<Sprite>(src);
+	SpritePtr s = make_shared<Sprite>(src);
 	timedMgr->addEvent(.016, [s, this](FusePtr fuse) {
 		Color c = s->getColor();
 		if (c.a >= 12) {
@@ -764,6 +762,10 @@ void State::propagateAll()
 				term->input1->status = 0;
 			term->propagateOutput();
 		}
+	//NEW: CHECK
+	for (auto& gate : logicGates)
+		if (isOfKind<NotGate>(gate) || isOfKind<NOrGate>(gate))
+			gate->propagateOutput();
 }
 
 void State::changeViewSize ()
@@ -782,7 +784,7 @@ bool State::loadCircuit()
 	string fname = "circuit1.txt";
 	auto btxt = filenameTbox.boxTxt.getString();
 	if (!btxt.isEmpty())
-		fname = string(btxt) + ".txt";
+		fname = stripExtension(string(btxt)) + ".txt";
 	std::ifstream circData {Resources::executingDir() / "resources" / "saved" / fname};
 	if (!circData.is_open()) {
 		cerr << "Couldn't load saved file. \n";
@@ -821,8 +823,8 @@ bool State::loadCircuit()
 			pos.x = stof(token);
 			ss >> token;
 			pos.y = stof(token);
-			cursorSprite.setRotation(rot);
-			cursorSprite.setScale(scale);
+			cursorSpr.setRotation(rot);
+			cursorSpr.setScale(scale);
 			initializeNode(node, node->name, pos.x, pos.y);
 		}
 		else if (section == "gate") {
@@ -834,7 +836,7 @@ bool State::loadCircuit()
 			ss >> token;
 			pos.y = stof(token);
 			// rotate cursorSprite if gate rotation added
-			gate->initialize(gate, gate->name, pos.x, pos.y, cursorSprite);
+			gate->initialize(gate, gate->name, pos.x, pos.y, cursorSpr);
 		}
 		else if (section == "label") {
 			createLabel(false);
@@ -850,6 +852,7 @@ bool State::loadCircuit()
 			ss >> token;
 			label.boxTxt.setCharacterSize(stoi(token));
 			label.setPosition(pos - label.borderOffset);
+			label.isActive = false;
 		}
 	}
 	circData.close();
@@ -862,7 +865,7 @@ void State::saveCircuit()
 	string fname = "circuit" + tS(++saveCt) + ".txt";
 	auto btxt = filenameTbox.boxTxt.getString();
 	if (!btxt.isEmpty())
-		fname = string(btxt) + ".txt";
+		fname = stripExtension(string(btxt)) + ".txt";
 	ofstream fs{Resources::executingDir() / "resources" / "saved" / fname, std::ios_base::trunc};
 	for (auto& node : icNodes) {
 		if (node->name == "gateinput" || node->name == "gateoutput")
@@ -912,6 +915,63 @@ void State::saveCircuit()
 	}
 	fs.close();
 	gSound("save").play();
+}
+
+void State::editDraw ()
+{
+	auto w = rwin;
+	if (curTool != "select")
+		w->draw(cursorShadow);
+	w->draw(gridLinesVtcl);
+	w->draw(gridLinesHztl);
+	for (auto& rect : rects)
+		w->draw(rect);
+	w->draw(toolPane);
+	for (auto& ghost : ghosts)
+		w->draw(*ghost);
+	
+	for (auto& node : icNodes)
+		if (node->isActive
+			&& node->name != "gateinput"
+			&& node->name != "gateoutput" )
+			w->draw(*node);
+	for (auto& gate : logicGates)
+		w->draw(*gate);
+	for (auto& label : labels)
+		w->draw(label);
+	
+	for (auto& icb : icButtons)
+		w->draw(icb.spr);
+	if (indexOf(icToolTags, curTool) != -1)
+		w->draw(cursorSpr);
+	w->draw(filenameTbox);
+	if (showDbgTxt) {
+		w->draw(mouseTxt);
+		w->draw(debugTxt);
+	}
+}
+
+void State::simulateDraw ()
+{
+	auto w = rwin;
+	for (auto& gate : logicGates) {
+		if (gate->isActive)
+			gate->drawSupplyLines(w);
+	}
+	for (auto& rect : rects)
+		w->draw(rect);
+	for (auto& node : icNodes)
+		if (node->isActive
+			&& node->name != "gateinput"
+			&& node->name != "gateoutput" )
+			w->draw(*node);
+	for (auto& gate : logicGates)
+		w->draw(*gate);
+	for (auto& label : labels)
+		w->draw(label);
+	w->draw(filenameTbox);
+	if (showDbgTxt)
+		w->draw(debugTxt);
 }
 
 map<string, function<ICNodePtr()>> State::nodeFactoryMap {

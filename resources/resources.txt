@@ -1,4 +1,6 @@
 @images
+instrucs.png	instrucs
+instrucsbtn.png	instrucsBtn
 gates.png	gateButtons
 ic.png		interconnects
 inout.png	termini
@@ -15,6 +17,7 @@ xor.png		xor
 @fonts
 Monaco.ttf		debug
 "Abadi MT Condensed Extra Bold" 		label
+Prisma.otf	instr
 
 
 @sounds

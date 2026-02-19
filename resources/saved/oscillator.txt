@@ -1,0 +1,48 @@
+obranch 0 2 2 1022 518 
+circuitout 90 2 2 1218 518 
+elbow 180 2 2 1022 714 
+elbow 270 2 2 686 714 
+elbow 0 2 2 686 518 
+straight 0 2 2 714 518 
+straight 0 2 2 742 518 
+straight 0 2 2 770 518 
+straight 0 2 2 798 518 
+straight 0 2 2 882 518 
+straight 0 2 2 910 518 
+straight 0 2 2 938 518 
+straight 0 2 2 966 518 
+straight 0 2 2 994 518 
+straight 90 2 2 1022 546 
+straight 90 2 2 1022 574 
+straight 90 2 2 1022 602 
+straight 90 2 2 1022 630 
+straight 90 2 2 1022 658 
+straight 90 2 2 1022 686 
+straight 180 2 2 994 714 
+straight 180 2 2 966 714 
+straight 180 2 2 938 714 
+straight 180 2 2 910 714 
+straight 180 2 2 882 714 
+straight 180 2 2 854 714 
+straight 180 2 2 826 714 
+straight 180 2 2 798 714 
+straight 180 2 2 770 714 
+straight 180 2 2 742 714 
+straight 180 2 2 714 714 
+straight 270 2 2 686 686 
+straight 270 2 2 686 658 
+straight 270 2 2 686 630 
+straight 270 2 2 686 602 
+straight 270 2 2 686 574 
+straight 270 2 2 686 546 
+straight 0 2 2 1050 518 
+straight 0 2 2 1078 518 
+straight 0 2 2 1106 518 
+straight 0 2 2 1134 518 
+straight 0 2 2 1162 518 
+straight 0 2 2 1190 518 
+:
+not 854 518 
+:
+OSCILLATOR
+784 346 24 

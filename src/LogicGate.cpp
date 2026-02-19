@@ -8,17 +8,6 @@
 
 #include "state.hpp"
 
-	/* Pixel offsets for where to start drawing
-	 * the supply lines that feed the gate
-	 */
-map<string, vecF> LogicGate::soMap = {
-	{"not", {11, 52}},
-	{"and", {27, 58}},
-	{"nand", {15, 52}},
-	{"or", {16, 45}},
-	{"nor", {19, 45}},
-	{"xor", {46, 64}}
-};
 
 void LogicGate::initialize(GatePtr& gateptr, const string& tag, int x, int y, const Sprite& cspr)
 {
@@ -163,9 +152,9 @@ void LogicGate::propagateOutput()
 			calcAndSetOutput(nextNode->status);
 			auto state = State::getSelf();
 			if (state->animateFlow) {
-				// USING TAGS WAS CREATING ERRORS
-				//			state->timedMgr->addEventIf("gate" + fS(spr.getPosition().x) + "," + fS(spr.getPosition().y),
-				state->timedMgr->addEvent( .15, [wkNode = nextNode->parent](){
+				state->timedMgr->addEventIf("gate" + fS(spr.getPosition().x) + "," + fS(spr.getPosition().y),
+//				state->timedMgr->addEvent(
+										  State::flowAnimDelay, [wkNode = nextNode->parent](){
 					if (auto node = wkNode.lock()) {
 						node->propagateOutput();
 					}
