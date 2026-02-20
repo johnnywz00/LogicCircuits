@@ -18,7 +18,7 @@ eraser.png	eraser
 
 @fonts
 Monaco.ttf		debug
-"Abadi MT Condensed Extra Bold" 		label
+Prisma.otf 		label
 Prisma.otf	instr
 
 
