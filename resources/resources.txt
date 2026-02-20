@@ -18,8 +18,9 @@ eraser.png	eraser
 
 @fonts
 Monaco.ttf		debug
-Prisma.otf 		label
+DSHolzschrift.otf 		label
 Prisma.otf	instr
+RollingNoOne-ExtraBold.otf	termini
 
 
 @sounds

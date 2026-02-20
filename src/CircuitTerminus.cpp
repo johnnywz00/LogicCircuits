@@ -10,7 +10,7 @@
 
 CircuitTerminus::CircuitTerminus()
 {
-	txt = Text("0", gFont("label"), 20);
+	txt = Text("0", gFont("termini"), 20);
 	txt.setFillColor(Color::Black);
 	txt.setOutlineColor(Color::White);
 	txt.setOutlineThickness(2);

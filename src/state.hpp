@@ -27,7 +27,7 @@
 
 #include "InterconnectNode.hpp"
 #include "LogicGate.hpp"
-#include "CircuitInput.hpp"
+#include "CircuitTerminus.hpp"
 #include "buttons.hpp"
 
 
