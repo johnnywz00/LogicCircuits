@@ -206,6 +206,7 @@ private:
 	Text    						mouseTxt
 									, instrBtnLabel
 									, flowDelayTxt
+									, signatureTxt
 									, debugTxt
 	;
 	VertexArray						gridLinesVtcl {Lines};

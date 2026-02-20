@@ -13,6 +13,11 @@ void State::onCreate ()
 	gSound("inputOff").setVolume(50);
 	debugTxtSetup();
 	
+	signatureTxt = Text("John Ziegler, 2025-2026", gFont("instr"), 16);
+	signatureTxt.setFillColor(CAPPUCCINO);
+	signatureTxt.setOrigin(signatureTxt.gLB().width, signatureTxt.gLB().height);
+	signatureTxt.setPosition(scrw - 15, scrh - 15);
+	
 	instrucsSpr.setTexture(gTexture("instrucs"));
 	float factor = scrh / (instrucsSpr.getTexture()->getSize().y + 40);
 	instrucsSpr.setScale(factor, factor);
@@ -520,6 +525,7 @@ void State::draw ()
 		rwin->draw(instrucsSpr);
 		rwin->draw(circListSpr);
 	}
+	rwin->draw(signatureTxt);
 }
 
 void State::removeNodeFromGrid(ICNodePtr& node)
