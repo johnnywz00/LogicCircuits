@@ -829,7 +829,7 @@ void State::changeViewSize ()
 	rwin->setView(vw);
 }
 
-bool State::loadCircuit()
+void State::loadCircuit()
 {
 	reset();
 	

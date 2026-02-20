@@ -175,7 +175,7 @@ private:
 		
 	void changeViewSize ();
 	
-	bool loadCircuit ();
+	void loadCircuit ();
 	
 	void saveCircuit ();
 	
