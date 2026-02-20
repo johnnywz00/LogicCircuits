@@ -22,8 +22,8 @@ using ICInputWkPtr = weak_ptr<ICInput>;
 class ICInput
 {
 public:
-	int status = -1;
-	ICNodeWkPtr parent;
+	ICNodeWkPtr 	parent;
+	int 			status = -1;
 };
 
 
@@ -33,7 +33,6 @@ class InterconnectNode 	: public Drawable
 {
 public:
 	static inline const Color 	circOffColor {250, 255, 240};
-//	static inline const Color 	circOffColor {193, 183, 165};
 	static inline const Color 	circOnColor {63, 149, 228};
 
 	InterconnectNode(int inputct = 1, int outputct = 1)
@@ -88,8 +87,7 @@ public:
 
 	virtual void propagateOutput();
 	
-	
-	
+		
 	Sprite 				spr;
 	ICInputPtr  		input1;
 	ICInputWkPtr 		output1;
@@ -230,8 +228,5 @@ public:
 	string getInputLocs() override { return string({xformedStr[3]}); }
 	string getOutputLocs() override { return string({xformedStr[1]}); }
 };
-
-
-
 
 #endif /* Interconnect_hpp */

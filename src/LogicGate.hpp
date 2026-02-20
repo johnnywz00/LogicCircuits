@@ -73,28 +73,27 @@ public:
 	
 	void drawSupplyLines (RenderWindow*);
 	
-	Sprite spr; // transistors and tracks
-	Sprite gateShape;
-	ICNodePtr inputA {nullptr};
-	ICNodePtr inputB {nullptr};
-	ICNodePtr output1 {nullptr};
-	bool drawGateShape;
-	vector<RectangleShape> flowRects;
-	string name;
-	bool isActive = true;
-	vecF supplyOffset;
+	Sprite 		spr;
+	vector<RectangleShape>
+				flowRects;
+	ICNodePtr 	inputA = nullptr;
+	ICNodePtr 	inputB = nullptr;
+	ICNodePtr 	output1 = nullptr;
+	string 		name;
+	vecF 		supplyOffset;
+	bool 		isActive = true;
 	
 protected:
 	/* Pixel offsets for where to start drawing
 	 * the supply lines that feed the gate
 	 */
 	static inline map<string, vecF> soMap = {
-		{"not", {11, 52}},
-		{"and", {27, 58}},
-		{"nand", {15, 52}},
-		{"or", {16, 45}},
-		{"nor", {19, 45}},
-		{"xor", {46, 64}}
+		{"not", 	{11, 52}}
+		, {"and", 	{27, 58}}
+		, {"nand", 	{15, 52}}
+		, {"or", 	{16, 45}}
+		, {"nor", 	{19, 45}}
+		, {"xor",	{46, 64}}
 	};
 	
 	bool A() const { return inputA->input1->status == 1; }
@@ -108,8 +107,6 @@ protected:
 	{
 		return vecPlusEqVec(vec, dataToRectShapes(data));
 	}
-	
-	int signalCt = 0;
 };
 
 
@@ -117,8 +114,6 @@ protected:
 class NotGate : public LogicGate
 {
 public:
-	void draw (RenderTarget&, RenderStates) const override;
-	
 	vector<RectangleShape> updateRects () override
 	{
 		vector<RectangleShape> ret;

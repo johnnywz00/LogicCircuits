@@ -9,9 +9,11 @@
 	(don't call propagate/create event if next node status is already what needed?)
 
  TO DO:
- - sounds
  - drag-rectangle selection; batch move/erase
+ - rects stored to file
+ - streamline iostreaming
  - gate rotation?
+ - more sounds?
  - cursor for move tool?
  */
 
@@ -112,7 +114,6 @@ private:
 	const string gateNames = "notnandnorxor";
 
 	
-
 	int cellSize () { return baseCellSize * gridScale.x; }
 	
 	char oppositeDirTo (char dir)

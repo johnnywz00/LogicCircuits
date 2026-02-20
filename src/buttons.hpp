@@ -27,10 +27,10 @@ public:
 		cursorOgn = spr.getOrigin();
 	}
 	
-	vecF  cursorOgn;
-	Sprite spr;
-	string tag;
-	bool isGate = false;
+	Sprite 	spr;
+	string 	tag;
+	vecF  	cursorOgn;
+	bool 	isGate = false;
 };
 
 #endif /* buttons_hpp */

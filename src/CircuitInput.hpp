@@ -36,7 +36,6 @@ public:
 		centerOrigin(txt);
 	}
 	
-	static Font& getFont();
 	Text		txt;
 };
 
@@ -60,9 +59,6 @@ public:
 	void propagateOutput() override
 	{
 		auto inp = getInput(0);
-//		if (inp->status == -1)
-//			return;
-//		else
 		if (inp->status == 1) {
 			spr.setColor(circOnColor);
 		}

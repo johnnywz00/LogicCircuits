@@ -14,12 +14,8 @@ void LogicGate::initialize(GatePtr& gateptr, const string& tag, int x, int y, co
 	auto state = State::getSelf();
 	name = tag;
 	spr.setTexture(gTexture(tag));
-//	auto sz = spr->getTexture()->getSize();
-//	spr->setTextureRect(IntRect(0, 0, sz.x, sz.y));
 	spr.setOrigin(cspr.getOrigin());
-//	spr->setRotation(cursorSprite.getRotation());
 	spr.setScale(cspr.getScale());
-//	gate->setXformedString();
 	state->icNodes.push_back(make_shared<GateInput>());
 	inputA = state->icNodes.back();
 	initializeGateNode(inputA, gateptr);
@@ -48,7 +44,6 @@ void LogicGate::setPosition(float x, float y)
 	}
 	spr.setPosition(newPos);
 	
-	// MODIFY IF ADDING GATE ROTATION
 	auto gp = state->toGridPos(x, y);
 	inputA->gridPos = {gp + gridOffsets().first};
 	state->gridLocs.emplace(inputA->gridPos, inputA);
@@ -61,7 +56,7 @@ void LogicGate::setPosition(float x, float y)
 	state->gridLocs.emplace(output1->gridPos, output1);
 	output1->spr.setPosition(newPos);
 	flowRects.clear();
-	updateRects();
+	flowRects = updateRects();
 }
 
 void LogicGate::initializeGateNode(ICNodePtr& node, GatePtr& gate)
@@ -77,14 +72,11 @@ void LogicGate::initializeGateNode(ICNodePtr& node, GatePtr& gate)
 	auto gnode = dynamic_pointer_cast<GateICNode>(node);
 	if (gnode)
 		gnode->parent = gate;
-//	gnode->parent = this;
 }
 
 
 void LogicGate::draw(RenderTarget& win, RenderStates st) const
 {
-	if (drawGateShape)
-		win.draw(gateShape);
 	win.draw(spr);
 	if (State::getSelf()->mode == "simulate") {
 		for (auto& rect : flowRects)
@@ -92,26 +84,12 @@ void LogicGate::draw(RenderTarget& win, RenderStates st) const
 	}
 }
 
-void NotGate::draw(RenderTarget& win, RenderStates st) const
-{
-	LogicGate::draw(win, st);
-	if (!A()) {
-		RectangleShape r {{4, 4}};
-		r.setFillColor(Color::Black);
-		r.setScale(State::getSelf()->gridScale);
-		r.setPosition(cornerToOgnCoords(vecF(2, 26)));
-		win.draw(r);
-	}
-}
-	
 vector<RectangleShape> LogicGate::dataToRectShapes(intvec data)
 {
 	vector<RectangleShape> ret;
 	for (int i = 0; i < data.size(); i += 4) {
 		RectangleShape r {{(float)data[i + 2], (float)data[i + 3]}};
 		r.setPosition(cornerToOgnCoords(vecF(data[i], data[i + 1])));
-		// add pvec to setposition to handle rotation
-		//rotate actual rectangles
 		r.setScale(State::getSelf()->gridScale);
 		r.setFillColor(inputA->circOnColor);
 		ret.push_back(r);

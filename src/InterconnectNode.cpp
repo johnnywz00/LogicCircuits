@@ -15,9 +15,6 @@ void InterconnectNode::propagateOutput()
 	bool willOutput = false;
 	for (int i = 0; i < inputCt; ++i) {
 		auto inp = getInput(i);
-		if (inp->status == -1)
-//			return
-			;
 		if (inp->status == 1)
 			willOutput = true;
 	}
@@ -46,7 +43,7 @@ void InterconnectNode::propagateOutput()
 				if (auto node = wkNode.lock()) {
 					node->propagateOutput();
 				}
-			}, false);
+			});
 		}
 //		else {
 //			if (auto parentSp = outp->parent.lock())

@@ -9,6 +9,8 @@ void State::onCreate ()
 	timedMgr->setCapacity(25000);
 	rwin->setFramerateLimit(1000);
 	
+	gSound("inputOn").setVolume(20);
+	gSound("inputOff").setVolume(50);
 	debugTxtSetup();
 	
 	instrucsSpr.setTexture(gTexture("instrucs"));
@@ -38,21 +40,21 @@ void State::onCreate ()
 	
 	icButtons.clear();
 	int firstGroupCt = 7;
-	for (int i = 0; i < firstGroupCt; ++i) {
-		icButtons.emplace_back(icToolTags[i], gTexture("interconnects"), vecF(100 + (i * 38), 20),
-							   vecF(i * 14, 14));
+	forNum (firstGroupCt) {
+		icButtons.emplace_back(icToolTags[i], gTexture("interconnects"), vecF(100 + (i * 38), 20), vecF(i * 14, 14));
 	}
-	for (int i = 0; i < 2; ++i) {
+	forNum (2) {
 		icButtons.emplace_back(icToolTags[i + firstGroupCt], gTexture("termini"), vecF(105 + (firstGroupCt * 38) + i * 50, 25), vecF(i * 20, 0), true);
 		icButtons.back().cursorOgn = {10, 13};
 	}
-	for (int i = 0; i < 6; ++i) {
+	forNum (6) {
 		icButtons.emplace_back(icToolTags[i + firstGroupCt + 2], gTexture("gateButtons"), vecF(205 + (firstGroupCt * 38) + i * 50, 25), vecF((i % 4) * 20, (i / 4) * 20), true);
 		icButtons.back().isGate = true;
 		icButtons.back().cursorOgn = gateOrigins[i];
 	}
 	
 	cursorShadow.setFillColor(Color(0, 0, 0, 30));
+	
 	toolPane.setSize({755, 55});
 	toolPane.setFillColor(Color(0, 0, 0, 20));
 		
@@ -80,7 +82,8 @@ bool State::handleTextEvent (Event& event)
 				else if (event.text.unicode == 9) ; // Don't write the \t
 				else activeTbox->appendText(event.text.unicode);
 		}
-		if (event.type == Event::KeyPressed && (event.key.code == Keyboard::Escape || event.key.code == Keyboard::Enter)) {
+		if (event.type == Event::KeyPressed
+			&& (event.key.code == Keyboard::Escape || event.key.code == Keyboard::Enter)) {
 			activeTbox->setActive(false);
 			activeTbox = nullptr;
 		}
@@ -119,8 +122,8 @@ void State::onMouseDown (int x, int y)
 			if (node->spr.gGB().contains(x, y)) {
 				int cur = node->input1->status;
 				node->input1->status = (cur == 1  ? 0 : 1);
-				//				propagateAll();
-				node->propagateOutput(); // seems to be working
+				gSound(cur == 1 ? "inputOff" : "inputOn").play();
+				node->propagateOutput();
 			}
 		}
 		return;
@@ -184,7 +187,6 @@ void State::onMouseDown (int x, int y)
 			draggingEraser = true;
 		}
 		
-		// remove "select" here if adding actual selection
 		else if (curTool == "move" || curTool == "select") {
 			bool startingDrag = false;
 			for (auto& node : icNodes) {
@@ -297,14 +299,6 @@ void State::onKeyPress(Keyboard::Key k)
 			break;
 			
 		case Keyboard::Q:
-			//			gridScale.x += iKP(LShift) ? -.1 : .1;
-			//			gridScale.y += iKP(LShift) ? -.1 : .1;
-			//			redrawGrid();
-			//			cursorSprite.setScale(gridScale);
-			//			for (auto& node : icNodes)
-			//				node->spr.setScale(gridScale);
-			
-			// needs more handling: cursorsprite, toolpane, panning, grid...
 			changeViewSize();
 			break;
 			
@@ -363,7 +357,7 @@ void State::onKeyPress(Keyboard::Key k)
 			
 			/* Activate the filename textbox */
 		case Keyboard::Tab:
-			filenameTbox.setActive(true); // cycle through all instead
+			filenameTbox.setActive(true);
 			activeTbox = &filenameTbox;
 			break;
 
@@ -372,7 +366,7 @@ void State::onKeyPress(Keyboard::Key k)
 			if (isShiftPressed())
 				showDbgTxt = !showDbgTxt;
 			break;
-			
+
 		default:
 			break;
 	}
@@ -391,7 +385,7 @@ void State::onKeyRelease(Keyboard::Key k)
 			else setTool(storedTool);
 			showCursor(oldCursor);
 			break;
-			
+
 		default:
 			break;
 	}
@@ -503,11 +497,13 @@ void State::update (const Time& time)
 				break;
 			}
 		}
-		//		oss<<"labelCt: "<<labels.size()<<'\n'<<"tbox: ";
-		//		if (!activeTbox)
-		//			oss<<"NULL\n";
-		//		else
-		//			oss<<(long)activeTbox<<'\n'<<activeTbox->boxTxt.gP().x<<", "<<activeTbox->boxTxt.gP().y<<'\n'<<string(activeTbox->boxTxt.getString())<<'\n';
+//		oss << "labelCt: " << labels.size() << '\n' << "tbox: ";
+//		if (!activeTbox)
+//			oss << "NULL\n";
+//		else
+//			oss << (long)activeTbox << '\n' << activeTbox->boxTxt.gP().x << ", "
+//			<< activeTbox->boxTxt.gP().y << '\n' << string(activeTbox->boxTxt.getString())
+//			<< '\n';
 		debugTxt.setString(oss.str());
 	}
 } //end update
@@ -613,12 +609,10 @@ void State::redrawGrid()
 	int maxx = minx + vw.getSize().x;   // if zooming
 	int miny = vw.getCenter().y - vw.getSize().y / 2;
 	int maxy = miny + vw.getSize().y;   // if zooming
-										//	for (int x = 0; x <= scrw; x += cellSize()) {
 	for (int x = minx - minx % cellSize(); x <= maxx; x += cellSize()) {
 		gridLinesVtcl.append(Vertex(vecF(x, miny), !(x % cell10) ? c10x : c));
 		gridLinesVtcl.append(Vertex(vecF(x, maxy), !(x % cell10) ? c10x : c));
 	}
-	//	for (int y = 0; y <= scrh; y += cellSize()) {
 	for (int y = miny - miny % cellSize(); y <= maxy; y += cellSize()) {
 		gridLinesHztl.append(Vertex(vecF(minx, y), !(y % cell10) ? c10x : c));
 		gridLinesHztl.append(Vertex(vecF(maxx, y), !(y % cell10) ? c10x : c));
@@ -768,7 +762,7 @@ void State::handleErase(int x, int y)
 		Textbox& label = *itr;
 		if (label.boxTxt.getGlobalBounds().contains(x, y)) {
 			label.isActive = false;
-			
+			/* Ghost the deleted text */
 			TextPtr txt = make_shared<Text>(label.boxTxt);
 			txt->setOutlineColor(Color::Transparent);
 			timedMgr->addEvent(.016, [txt, this](FusePtr fuse) {
@@ -818,7 +812,9 @@ void State::propagateAll()
 				term->input1->status = 0;
 			term->propagateOutput();
 		}
-	//NEW: CHECK
+	/* This may be unnecessary except for the one case
+	 * of a no-input oscillator
+	 */
 	for (auto& gate : logicGates)
 		if (isOfKind<NotGate>(gate) || isOfKind<NOrGate>(gate))
 			gate->propagateOutput();
@@ -891,13 +887,12 @@ bool State::loadCircuit()
 			pos.x = stof(token);
 			ss >> token;
 			pos.y = stof(token);
-			// rotate cursorSprite if gate rotation added
 			gate->initialize(gate, gate->name, pos.x, pos.y, cursorSpr);
 		}
 		else if (section == "label") {
 			createLabel(false);
 			auto& label = labels.back();
-			label.boxTxt.setString(line); //disregard the stringstream for this line
+			label.boxTxt.setString(line); // Disregard the stringstream for this line
 			getline(circData, line);
 			ss = stringstream(line);
 			ss >> token;
@@ -926,20 +921,9 @@ void State::saveCircuit()
 	for (auto& node : icNodes) {
 		if (node->name == "gateinput" || node->name == "gateoutput")
 			continue;
-		if (node->spr.getPosition().x < 0 && node->spr.getPosition().y < 0)
-			continue;	// unnecessary if fixing erase handling
 		Sprite* spr = &node->spr;
-//		auto tr = spr->getTextureRect();
 		fs
-//			<< node->nodeID << ' '
 			<< node->name << ' '
-//			<< node->txMapKey << ' '
-//			<< tr.left << ' '
-//			<< tr.top << ' '
-//			<< tr.width << ' '
-//			<< tr.height << ' '
-//			<< spr->getOrigin().x << ' '
-//			<< spr->getOrigin().y << ' '
 			<< spr->getRotation() << ' '
 			<< spr->getScale().x << ' '
 			<< spr->getScale().y << ' '
@@ -949,19 +933,14 @@ void State::saveCircuit()
 	}
 	fs << ":\n";
 	for (auto& gate : logicGates) {
-		if (gate->spr.getPosition().x < 0 && gate->spr.getPosition().y < 0)
-			continue;	// unnecessary if fixing erase handling
 		fs
 			<< gate->name << ' '
 			<< gate->spr.getPosition().x << ' '
 			<< gate->spr.getPosition().y << ' '
-		// rotation?
 			<< '\n';
 	}
 	fs << ":\n";
 	for (auto& label : labels) {
-		if (label.boxTxt.getPosition().x < 0 && label.boxTxt.getPosition().y < 0)
-			continue;	// unnecessary if fixing erase handling
 		fs
 		<< string(label.boxTxt.getString()) << '\n'
 		<< label.boxTxt.getPosition().x << ' '

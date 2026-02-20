@@ -24,5 +24,7 @@ Prisma.otf	instr
 
 @sounds
 savefile.mp3	save
+inputOn.mp3		inputOn
+inputOff.mp3	inputOff
 
 
