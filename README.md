@@ -2,6 +2,7 @@
 
 ## C++/SFML computer logic circuit editor and visualizer
 
+<img width="1728" height="1117" alt="Screenshot 2026-02-20 at 12 48 06 PM" src="https://github.com/user-attachments/assets/63cd0fc5-d846-4462-a975-1976de517e99" />
 
 ### ABOUT THE PROJECT
 
