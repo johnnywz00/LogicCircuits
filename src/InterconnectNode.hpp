@@ -19,6 +19,10 @@ using ICInputPtr = shared_ptr<ICInput>;
 using ICInputWkPtr = weak_ptr<ICInput>;
 
 
+/* Because a single track node such as a tee may have more than
+ * one inlet, we give each inlet an individual identity to
+ * facilitate linking nodes together later
+ */
 class ICInput
 {
 public:
@@ -27,7 +31,9 @@ public:
 };
 
 
-
+/* The root class for all interconnects/pieces of "track", both
+ * for graphical representation and current propagation logic
+ */
 class InterconnectNode 	: public Drawable
 						, public enable_shared_from_this<InterconnectNode>
 {
@@ -54,7 +60,11 @@ public:
 		if (isActive)
 			win.draw(spr);
 	}
-		
+	
+	/* Get signals for this node's inputs and outputs,
+	 * using a couple guard methods in the base class
+	 * to cover error checking (probably overkill here)
+	 */
 	ICInputPtr getOutput(int idx)
 	{
 		if (idx < 0 || idx + 1 > outputCt)
@@ -77,16 +87,49 @@ public:
 	virtual void setOutput(int idx, const ICInputPtr& dest)
 	{
 		output1 = dest;
+		/* Subclasses will use idx */
 	}
 	
 	virtual ICInputPtr getInput_(int idx) { return input1; }
 	
-	virtual string getInputLocs() = 0;
+	virtual void propagateOutput();
 
+	/* My system may be over-convoluted and a little off-beat,
+	 * but we will need to link nodes together after all manner
+	 * of rotating and axis flipping has been done to them in the
+	 * editor. I'm using the string "nesw" (referring to the compass
+	 * directions), and manipulating that string correspondent to
+	 * the transformations that were performed on the node sprite
+	 * in the editor. A given subclass has either one or two indices
+	 * that it always picks: which letters of "nesw" end up at those
+	 * indices after transformation determines which directions the
+	 * node will look on-grid to try to connect to another node
+	 * with an opening pointing to the first.
+	 */
+	virtual string getInputLocs() = 0;
 	virtual string getOutputLocs() = 0;
 
-	virtual void propagateOutput();
-	
+	void setXformedString()
+	{
+		string str = "nesw";
+		if (epsEquals(spr.getRotation(), 270))
+			std::rotate(str.begin(), str.begin() + 3, str.end());
+		else if (epsEquals(spr.getRotation(), 90))
+			std::rotate(str.begin(), str.begin() + 1, str.end());
+		else if (epsEquals(spr.getRotation(), 180))
+			std::rotate(str.begin(), str.begin() + 2, str.end());
+		/* Negative scale values mean the sprite has been flipped
+		 * around one or both axes
+		 */
+		if (spr.getScale().x < 0) {
+			swap(str[1], str[3]);
+		}
+		if (spr.getScale().y < 0) {
+			swap(str[0], str[2]);
+		}
+		xformedStr = str;
+	}
+		
 		
 	Sprite 				spr;
 	ICInputPtr  		input1;
@@ -100,30 +143,12 @@ public:
 	int 				outputCt;
 	bool				isActive = true;
 	
-	void setXformedString()
-	{
-		string str = "nesw";
-		if (epsEquals(spr.getRotation(), 270))
-			std::rotate(str.begin(), str.begin() + 3, str.end());
-		else if (epsEquals(spr.getRotation(), 90))
-			std::rotate(str.begin(), str.begin() + 1, str.end());
-		else if (epsEquals(spr.getRotation(), 180))
-			std::rotate(str.begin(), str.begin() + 2, str.end());
-		if (spr.getScale().x < 0) {
-			swap(str[1], str[3]);
-		}
-		if (spr.getScale().y < 0) {
-			swap(str[0], str[2]);
-		}
-		xformedStr = str;
-	}
-	
 private:
 	static inline int nextID = 0;
 };
 
 
-
+/* Splitting tees and branches */
 class TwoOutputICNode : public InterconnectNode
 {
 public:
@@ -155,7 +180,7 @@ public:
 };
 
 
-
+/* Merging tees and branches */
 class TwoInputICNode : public InterconnectNode
 {
 public:

@@ -163,6 +163,12 @@ private:
 	
 	void setNodePosition (ICNodePtr& node, float x, float y);
 	
+	/* In editor mode, interconnects are basically just sprites
+	 * with a position. When switching to simulate mode, each
+	 * interconnect and gate inlet/outlet must examine the grid
+	 * data and get pointers to the pieces that are both adjacent
+	 * in-grid and whose openings correspond to its own
+	 */
 	void linkICNodes ();
 	
 	void createLabel (bool activate = true);
@@ -171,6 +177,10 @@ private:
 	
 	SpritePtr makeSpriteGhost (Sprite& src);
 	
+	/* Gates and ICNodes handle the logic for determining
+	 * whether they pass down a 1 or 0. This method notifies
+	 * them to begin propagating
+	 */
 	void propagateAll ();
 		
 	void changeViewSize ();

@@ -17,6 +17,11 @@ using GatePtr = shared_ptr<LogicGate>;
 using GateWkPtr = weak_ptr<LogicGate>;
 
 
+/* These nodes are effectively invisible in-program
+ * as the logic gates lie over them. They help
+ * bridge the gap in logic as the current passes from
+ * normal tracks to the logic gates
+ */
 class GateICNode : public InterconnectNode
 {
 public:
@@ -46,6 +51,9 @@ public:
 
    
 
+/* LogicGate handles both the graphical representation and the
+ * current flow simulation of a logic gate
+ */
 class LogicGate : public Drawable
 {
 public:
@@ -59,10 +67,22 @@ public:
 	 */
 	virtual vector<RectangleShape> updateRects () = 0;
 	
+	/* A gate's grid position is determined by the position
+	 * of its outlet (as there is only ever one of those).
+	 * The gridOffsets are cell offsets from the outlet
+	 * to each of the gate's inlets.
+	 */
 	virtual pair<vecF, vecF> gridOffsets () = 0;
 	
+	/* Send timed events for the next downstream entity
+	 * to update to what we're outputting, and continue
+	 * the sequence
+	 */
 	virtual void propagateOutput ();
 	
+	/* Determine gate-level logic: if we're an AND gate
+	 * send out a 0 unless both A and B are on, etc.
+	 */
 	virtual void calcAndSetOutput (int& outStatus) { }
 	
 	virtual void initialize (GatePtr&, const string&, int x, int y, const Sprite&);
@@ -71,6 +91,11 @@ public:
 	
 	void initializeGateNode (ICNodePtr&, GatePtr&);
 	
+	/* The "supply lines", or rails, are an attempt to visually
+	 * convey that a current is always flowing to every transistor
+	 * in the circuit and trying to "get through". They require no
+	 * logic; only need to be correctly aligned with each gate
+	 */
 	void drawSupplyLines (RenderWindow*);
 	
 	Sprite 		spr;
@@ -96,9 +121,13 @@ protected:
 		, {"xor",	{46, 64}}
 	};
 	
+	/* Get the current input values coming to this gate */
 	bool A() const { return inputA->input1->status == 1; }
 	bool B() const { return inputB->input1->status == 1; }
 	
+	/* Next three methods are just mechanics for drawing
+	 * the blue blips of current inside of a gate
+	 */
 	vector<RectangleShape> dataToRectShapes (intvec data);
 	
 	vecF cornerToOgnCoords (vecF fromCorner) const;
