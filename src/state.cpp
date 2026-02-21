@@ -28,12 +28,14 @@ void State::onCreate ()
 	circListSpr.setScale(factor, factor);
 	circListSpr.setPosition(scrw, scrcy);
 
-	instrucsBtn.setTexture(gTexture("instrucsBtn"));
-	instrucsBtn.setScale(1.8, 1.2);
-	centerOrigin(instrucsBtn);
-	instrucsBtn.setPosition(scrw - 400, 35);
+	filenameTbox = Textbox(gFont("debug"), {scrw - 228, 25});
 	
-	instrBtnLabel = Text("Instructions", gFont("instr"), 14);
+	instrucsBtn.setTexture(gTexture("instrucsBtn"));
+	instrucsBtn.setScale(2.4, 1.4);
+	centerOrigin(instrucsBtn);
+	instrucsBtn.setPosition(scrw - 380, 35);
+	
+	instrBtnLabel = Text("Instructions", gFont("instr"), 16);
 	centerOrigin(instrBtnLabel);
 	instrBtnLabel.setPosition(instrucsBtn.gP() - vecF(0, 3));
 	instrBtnLabel.setFillColor(CAPPUCCINO);
@@ -63,8 +65,6 @@ void State::onCreate ()
 	toolPane.setSize({755, 55});
 	toolPane.setFillColor(Color(0, 0, 0, 20));
 		
-	filenameTbox = Textbox(gFont("debug"), {1500, 25});
-	
 	icNodes.reserve(2200);
 	termini.reserve(40);
 	logicGates.reserve(50);
