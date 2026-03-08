@@ -17,10 +17,12 @@ eraser.png	eraser
 #ground.png		ground		repeat
 
 @fonts
-Monaco.ttf		debug
-DSHolzschrift.otf 		label
-Prisma.otf	instr
+Monaco.ttf					debug
+"Candara Bold.ttf"			tbox
+DSHolzschrift.otf 			label
+Prisma.otf					instr
 RollingNoOne-ExtraBold.otf	termini
+"Courier New.ttf"			termBtnLabel
 
 
 @sounds

@@ -10,9 +10,9 @@
 
  TO DO:
  - drag-rectangle selection; batch move/erase
- - rects stored to file
+ - drawablerects stored to file
  - streamline iostreaming
- - gate rotation?
+ - gate rotation? (tedious pixel juggling for interior waterflow rects
  - more sounds?
  - cursor for move tool?
  */
@@ -218,6 +218,8 @@ private:
 									, flowDelayTxt
 									, signatureTxt
 									, debugTxt
+									, termBtnLabel[2]
+									, gateBtnLabel[6]
 	;
 	VertexArray						gridLinesVtcl {Lines};
 	VertexArray						gridLinesHztl {Lines};

@@ -28,7 +28,8 @@ void State::onCreate ()
 	circListSpr.setScale(factor, factor);
 	circListSpr.setPosition(scrw, scrcy);
 
-	filenameTbox = Textbox(gFont("debug"), {scrw - 228, 25});
+	filenameTbox = Textbox(gFont("tbox"), {scrw - 228, 25}, 18);
+	filenameTbox.changeOffset(vecF(4, -1));
 	
 	instrucsBtn.setTexture(gTexture("instrucsBtn"));
 	instrucsBtn.setScale(2.4, 1.4);
@@ -39,6 +40,7 @@ void State::onCreate ()
 	centerOrigin(instrBtnLabel);
 	instrBtnLabel.setPosition(instrucsBtn.gP() - vecF(0, 3));
 	instrBtnLabel.setFillColor(CAPPUCCINO);
+	
 	
 	flowDelayTxt = Text("Flow delay: .02", gFont("instr"), 18);
 	centerOrigin(flowDelayTxt);
@@ -51,18 +53,31 @@ void State::onCreate ()
 		icButtons.emplace_back(icToolTags[i], gTexture("interconnects"), vecF(100 + (i * 38), 20), vecF(i * 14, 14));
 	}
 	forNum (2) {
-		icButtons.emplace_back(icToolTags[i + firstGroupCt], gTexture("termini"), vecF(105 + (firstGroupCt * 38) + i * 50, 25), vecF(i * 20, 0), true);
+		auto pos = vecF(105 + (firstGroupCt * 38) + i * 50, 25);
+		icButtons.emplace_back(icToolTags[i + firstGroupCt], gTexture("termini"), pos, vecF(i * 20, 0), true);
 		icButtons.back().cursorOgn = {10, 13};
+		
+		termBtnLabel[i] = Text(i ? "Output" : "Input", gFont("termBtnLabel"), 10);
+		termBtnLabel[i].setFillColor(Color(0, 0, 0, 230));
+		centerOrigin(termBtnLabel[i]);
+		termBtnLabel[i].setPosition(pos + vecF(0, -4));
 	}
 	forNum (6) {
-		icButtons.emplace_back(icToolTags[i + firstGroupCt + 2], gTexture("gateButtons"), vecF(205 + (firstGroupCt * 38) + i * 50, 25), vecF((i % 4) * 20, (i / 4) * 20), true);
+		auto pos = vecF(205 + (firstGroupCt * 38) + i * 50, 25);
+		string tag = icToolTags[i + firstGroupCt + 2];
+		icButtons.emplace_back(tag, gTexture("gateButtons"), pos, vecF((i % 4) * 20, (i / 4) * 20), true);
 		icButtons.back().isGate = true;
 		icButtons.back().cursorOgn = gateOrigins[i];
+		
+		gateBtnLabel[i] = Text(toUpper(tag), gFont("termBtnLabel"), 11);
+		gateBtnLabel[i].setFillColor(Color(0, 0, 0, 230));
+		centerOrigin(gateBtnLabel[i]);
+		gateBtnLabel[i].setPosition(pos + vecF(0, 25));
 	}
 	
 	cursorShadow.setFillColor(Color(0, 0, 0, 30));
 	
-	toolPane.setSize({755, 55});
+	toolPane.setSize({755, 61});
 	toolPane.setFillColor(Color(0, 0, 0, 20));
 		
 	icNodes.reserve(2200);
@@ -405,7 +420,7 @@ void State::update (const Time& time)
 	/* Panning */
 	View vw = rwin->getView();
 	auto oldPos = vw.getCenter();
-	bool changedView;
+	bool changedView = false;
 	if (iKP(Left)) {
 		vw.move(-5, 0);
 		changedView = true;
@@ -983,10 +998,18 @@ void State::editDraw ()
 	for (auto& label : labels)
 		w->draw(label);
 	
+	bool toolIsGate = gateNames.find(curTool) != string::npos;
+	if (toolIsGate)
+		w->draw(cursorSpr); // Cursor drawn later for others
 	for (auto& icb : icButtons)
 		w->draw(icb.spr);
-	if (indexOf(icToolTags, curTool) != -1
-		|| curTool == "erase")
+	forNum(2)
+		w->draw(termBtnLabel[i]);
+	forNum(6)
+		w->draw(gateBtnLabel[i]);
+	if (	indexOf(icToolTags, curTool) != -1
+			&& !toolIsGate
+			|| curTool == "erase")
 		w->draw(cursorSpr);
 	w->draw(filenameTbox);
 	if (showDbgTxt) {
