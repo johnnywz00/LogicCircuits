@@ -38,7 +38,7 @@ So I must needs make a C++ simulator based on my new knowledge: getting, first, 
 
 **Majority rules:** The circuit will output a 1 only if there are more 1s than 0s amongst its inputs. In addition to more commonplace uses, this can be used in safety-critical situations: A signal can be sent through three identical modules, all feeding out into the majority circuit. Under normal circumstances these will all produce the same signal, but in the event that one module malfunctions and produces a spurious signal, the majority checker will keep the system running based on the correct output of the other two modules.
 
-**Oscillator:** Here a chain of gates send their output back to their input (as well as a branch that goes onward), creating a cycle that is continually switching the output off and on. 
+**Oscillator:** Here a chain of gates send their output back to their input (as well as to a branch that goes onward), creating a cycle that is continually switching the output off and on. 
 
 **S-R Latch:** (Set/reset latch) This is the basic building block of "memory" in a computer processor: while electrical pulses are typically racing around and changing or disappearing at light speed, this circuit "captures" a 1 or 0 state indefinitely by using a feedback loop (similar to the oscillator). Its inputs can determine whether to "set" it to 1 or "reset" it to 0, and it will output the value that is currently "trapped" in the feedback loop. When many of these are used together (with some extra sophistications to align them with the computer's pulse clock), the processor can store whole numbers for use in complicated calculations without using a hard disk or RAM memory. 
 </details>
